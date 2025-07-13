@@ -25,4 +25,5 @@ tauri = { version = "2", features = [] }
 tauri-plugin-opener = "2"
 serde = { version = "1", features = ["derive"] }
 serde_json = "1"
-wcm = { git = "https://github.com/ahaoboy/windows-contextmenu-manager.git" }
+wcm = { path = "../../wcm" }
+is-admin = { version = "0.1", git = "https://github.com/ahaoboy/is-admin" }

@@ -1,8 +1,8 @@
-use wcm::{Manager, Type};
+use wcm::{Manager, Scope, Type};
 
 #[tauri::command]
-fn list(ty: Type) -> Vec<wcm::MenuItem> {
-    ty.list()
+fn list(ty: Type, scope: Scope) -> Vec<wcm::MenuItem> {
+    ty.list(scope)
 }
 
 #[tauri::command]
@@ -16,24 +16,30 @@ fn restart_explorer() {
 }
 
 #[tauri::command]
-fn disable(ty: Type, id: String) -> Vec<wcm::MenuItem> {
-    // let v = ty.list();
-    // let Some(item) = v.iter().find(|i| i.id == id) else {
-    //     return v;
-    // };
-
-    ty.disable(&id, wcm::BlockScope::User);
-    ty.list()
+fn enable_classic_menu() {
+    let _ = Type::enable_classic_menu();
 }
-#[tauri::command]
-fn enable(ty: Type, id: String) -> Vec<wcm::MenuItem> {
-    // let v = ty.list();
-    // let Some(item) = v.iter().find(|i| i.id == id) else {
-    //     return v;
-    // };
 
-    ty.enable(&id, wcm::BlockScope::User);
-    ty.list()
+#[tauri::command]
+fn disable_classic_menu() {
+    let _ = Type::disable_classic_menu();
+}
+
+#[tauri::command]
+fn disable(ty: Type, id: String, scope: Scope) -> Vec<wcm::MenuItem> {
+    let _ = ty.disable(&id, scope);
+    ty.list(scope)
+}
+
+#[tauri::command]
+fn enable(ty: Type, id: String, scope: Scope) -> Vec<wcm::MenuItem> {
+    let _ = ty.enable(&id, scope);
+    ty.list(scope)
+}
+
+#[tauri::command]
+fn is_admin() -> bool {
+    is_admin::is_admin()
 }
 
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
@@ -45,7 +51,10 @@ pub fn run() {
             menu_type,
             disable,
             enable,
-            restart_explorer
+            restart_explorer,
+            is_admin,
+            enable_classic_menu,
+            disable_classic_menu,
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");
