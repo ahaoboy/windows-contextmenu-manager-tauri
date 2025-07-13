@@ -254,7 +254,6 @@ const App = () => {
                 <Flex align="center" justify="start" gap="small">
                   <Avatar
                     shape="square"
-                    size={32}
                     src={uint8ArrayToImageUrl(item.info?.icon)}
                   />
                   <Text> {item.name} </Text>
@@ -314,14 +313,14 @@ const App = () => {
             classic
           </Button>
           <Button icon={<ReloadOutlined />} onClick={update}>refresh</Button>
-          <Button onClick={() => {
+          {menuType === 'Win11' ? <Button onClick={() => {
             enable_classic_menu()
             setMenuType("Win10");
-          }}>enable classic menu</Button>
-          <Button onClick={() => {
-            disable_classic_menu();
-            setMenuType("Win11");
-          }}>disable classic menu</Button>
+          }}>enable classic menu</Button> :
+            <Button onClick={() => {
+              disable_classic_menu();
+              setMenuType("Win11");
+            }}>disable classic menu</Button>}
           <Button onClick={restart_explorer}>restart explorer</Button>
         </Space>
       </Flex>
