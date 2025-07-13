@@ -4,6 +4,7 @@ import {
   Button,
   Collapse,
   Dropdown,
+  Flex,
   Input,
   Layout,
   List,
@@ -34,7 +35,11 @@ type MenuItemInfo = {
   publisher_display_name: string;
   description: string;
   types: string[];
+  family_name: string;
+  install_path: string;
+  full_name: string;
 };
+
 type MenuItem = {
   id: string;
   name: string;
@@ -48,7 +53,7 @@ function uint8ArrayToImageUrl(
   mimeType = "image/png",
 ): string {
   if (!data) {
-    return "/public/empty.png";
+    return "/empty.png";
   }
   const blob = new Blob([new Uint8Array(data)], { type: mimeType });
   return URL.createObjectURL(blob);
@@ -77,6 +82,19 @@ function disable(ty: Type, id: string, scope: Scope) {
 }
 function list(ty: Type, scope: Scope) {
   return invoke<MenuItem[]>("list", { ty, scope });
+}
+function open_file_location(path: string) {
+  return invoke("open_file_location", { path });
+}
+function open_app_settings() {
+  return invoke("open_app_settings");
+}
+function open_store(name: string) {
+  return invoke("open_store", { name });
+}
+function uninstall(fullname: string) {
+  console.log("uninstalling", fullname);
+  return invoke("uninstall", { fullname });
 }
 
 const App = () => {
@@ -141,6 +159,39 @@ const App = () => {
     if (info.types && info.types.length > 0) {
       v.push(<Title level={level}>types: {info.types.join(",  ")}</Title>);
     }
+
+    v.push(
+      <Flex gap="small">
+        <Button
+          onClick={() => {
+            open_file_location(info.install_path);
+          }}
+        >
+          Open File Location
+        </Button>
+        <Button
+          onClick={() => {
+            open_app_settings();
+          }}
+        >
+          Open App Settings
+        </Button>
+        <Button
+          onClick={() => {
+            open_store(info.family_name);
+          }}
+        >
+          Open Store
+        </Button>
+        <Button
+          onClick={() => {
+            uninstall(info.full_name);
+          }}
+        >
+          Uninstall
+        </Button>
+      </Flex>
+    )
     return <>{...v}</>;
   };
 
@@ -169,15 +220,13 @@ const App = () => {
           items={data.map((item) => {
             return {
               label: (
-                <Space align="start" className="item-space">
+                <Space align="start">
                   <Avatar
                     shape="square"
                     size={32}
                     src={uint8ArrayToImageUrl(item.info?.icon)}
                   />
-                  <div className="item-text">
-                    <div className="item-title">{item.name}</div>
-                  </div>
+                  <Text> {item.name} </Text>
                 </Space>
               ),
               key: item.id,

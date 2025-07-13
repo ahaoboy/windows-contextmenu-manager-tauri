@@ -1,3 +1,5 @@
+use std::process::Command;
+
 use wcm::{Manager, Scope, Type};
 
 #[tauri::command]
@@ -42,6 +44,36 @@ fn is_admin() -> bool {
     is_admin::is_admin()
 }
 
+#[tauri::command]
+fn open_file_location(path: &str) {
+    let _ = Command::new("explorer")
+        // .arg("/select,")
+        .arg(path)
+        .spawn();
+}
+#[tauri::command]
+fn open_app_settings() {
+    let _ = Command::new("powershell")
+        .args(["-c", "start ms-settings:appsfeatures"])
+        .spawn();
+}
+#[tauri::command]
+fn open_store(name: &str) {
+    let uri = format!("ms-windows-store://pdp/?PFN={}", name);
+    let _ = Command::new("powershell")
+        .args(["-c", &format!("start {uri}")])
+        .spawn();
+}
+
+#[tauri::command]
+fn uninstall(fullname: &str) {
+    let cmd = format!("Remove-AppxPackage {} -Confirm", fullname);
+
+    let _ = Command::new("cmd")
+        .args(["/C", "start", "powershell", "-NoExit", "-Command", &cmd])
+        .spawn();
+}
+
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
     tauri::Builder::default()
@@ -55,6 +87,10 @@ pub fn run() {
             is_admin,
             enable_classic_menu,
             disable_classic_menu,
+            open_file_location,
+            open_app_settings,
+            open_store,
+            uninstall,
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");
