@@ -11,6 +11,7 @@ import {
   Menu,
   Radio,
   Space,
+  Spin,
   Switch,
   Tabs,
 } from "antd";
@@ -103,8 +104,10 @@ const App = () => {
   const [menuType, setMenuType] = useState<Type>("Win11");
   const [scope, setScope] = useState<Scope>("User");
   const [admin, setAdmin] = useState<boolean>(false);
+  const [spinning, setSpinning] = useState(false)
 
   const update = async () => {
+    setSpinning(true);
     const v = await list(tabType, scope);
     setData(v);
     console.log(v);
@@ -112,6 +115,7 @@ const App = () => {
     setMenuType(t);
     const admin = await is_admin();
     setAdmin(admin);
+    setSpinning(false);
   };
 
   useEffect(() => {
@@ -197,7 +201,7 @@ const App = () => {
 
   useEffect(() => {
     update();
-  }, [scope]);
+  }, [scope, tabType]);
 
   const Win11 = () => {
     return (
@@ -220,14 +224,14 @@ const App = () => {
           items={data.map((item) => {
             return {
               label: (
-                <Space align="start">
+                <Flex align="center" justify="start" gap="small">
                   <Avatar
                     shape="square"
                     size={32}
                     src={uint8ArrayToImageUrl(item.info?.icon)}
                   />
                   <Text> {item.name} </Text>
-                </Space>
+                </Flex>
               ),
               key: item.id,
               children: get_extra(item.info),
@@ -252,30 +256,42 @@ const App = () => {
 
   return (
     <Layout className="container">
-      <Header className="header-flex">
+      <Spin spinning={spinning} fullscreen />
+
+      <Flex justify="center" className="header-flex">
         <Space>
           <Button
             icon={admin ? <CheckOutlined /> : <CloseOutlined />}
+            disabled
             onClick={update}
           >
             admin
           </Button>
           <Button
+            disabled
             icon={menuType === "Win10" ? <CheckOutlined /> : <CloseOutlined />}
           >
             classic
           </Button>
           <Button icon={<ReloadOutlined />} onClick={update}>refresh</Button>
-          <Button onClick={enable_classic_menu}>enable classic menu</Button>
-          <Button onClick={disable_classic_menu}>disable classic menu</Button>
+          <Button onClick={() => {
+            enable_classic_menu()
+            setMenuType("Win10");
+          }}>enable classic menu</Button>
+          <Button onClick={() => {
+            disable_classic_menu();
+            setMenuType("Win11");
+          }}>disable classic menu</Button>
           <Button onClick={restart_explorer}>restart explorer</Button>
         </Space>
-      </Header>
+      </Flex>
       <Tabs
         defaultActiveKey="Win11"
         centered
         onChange={(e) => {
           console.log(e);
+          setTabType(e as Type);
+          update();
         }}
         items={[
           {

@@ -3,9 +3,13 @@
   width: 100vw;
   height: 100vh;
   text-align: center;
+  overflow: auto;
+  margin: 0;
+  padding: 0;
 }
 
-body, html {
+body,
+html {
   width: 100vw;
   height: 100vh;
   margin: 0;
@@ -35,6 +39,8 @@ body, html {
 }
 
 .container {
+  margin: 0;
+  padding: 0;
   flex-direction: column;
   overflow: auto;
 }
