@@ -183,7 +183,9 @@ const App = () => {
               extra: (
                 <Switch
                   checked={item.enabled}
-                  onChange={async (e) => {
+                  onChange={async (e, event) => {
+                    event.preventDefault();
+                    event.stopPropagation();
                     const cmd = e ? enable : disable;
                     const v = await cmd(tabType, item.id, scope);
                     setData(v);
