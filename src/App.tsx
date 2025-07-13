@@ -147,20 +147,22 @@ const App = () => {
   useEffect(() => {
     update();
   }, [scope]);
+
   const Win11 = () => {
     return (
       <Content>
-        <Radio.Group
-          defaultValue="User"
-          value={scope}
-          onChange={(e) => {
-            console.log(e.target.value);
-            setScope(e.target.value as Scope);
-          }}
-        >
-          <Radio.Button value="User">User</Radio.Button>
-          <Radio.Button value="Machine">Machine</Radio.Button>
-        </Radio.Group>
+        {admin && (
+          <Radio.Group
+            defaultValue="User"
+            value={scope}
+            onChange={(e) => {
+              setScope(e.target.value as Scope);
+            }}
+          >
+            <Radio.Button value="User">User</Radio.Button>
+            <Radio.Button value="Machine">Machine</Radio.Button>
+          </Radio.Group>
+        )}
         <Collapse
           expandIconPosition={"end"}
           style={{ textAlign: "left" }}
@@ -208,6 +210,11 @@ const App = () => {
             onClick={update}
           >
             admin
+          </Button>
+          <Button
+            icon={menuType === "Win10" ? <CheckOutlined /> : <CloseOutlined />}
+          >
+            classic
           </Button>
           <Button icon={<ReloadOutlined />} onClick={update}>refresh</Button>
           <Button onClick={enable_classic_menu}>enable classic menu</Button>
