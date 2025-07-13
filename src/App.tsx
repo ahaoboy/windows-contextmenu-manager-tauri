@@ -13,6 +13,7 @@ import {
   Space,
   Spin,
   Switch,
+  Table,
   Tabs,
 } from "antd";
 import {
@@ -20,6 +21,7 @@ import {
   CheckOutlined,
   CloseCircleOutlined,
   CloseOutlined,
+  CopyOutlined,
   DownOutlined,
   ReloadOutlined,
 } from "@ant-design/icons";
@@ -31,11 +33,16 @@ const { Text, Title } = Typography;
 type Type = "Win10" | "Win11";
 type Scope = "User" | "Machine";
 
+type TypeItem = {
+  id: string,
+  clsid: string,
+  ty: string
+}
 type MenuItemInfo = {
   icon: Uint8Array | undefined;
   publisher_display_name: string;
   description: string;
-  types: string[];
+  types: TypeItem[];
   family_name: string;
   install_path: string;
   full_name: string;
@@ -160,9 +167,29 @@ const App = () => {
         v.push(<Title level={level}>{k}: {info[k]}</Title>);
       }
     }
-    if (info.types && info.types.length > 0) {
-      v.push(<Title level={level}>types: {info.types.join(",  ")}</Title>);
+
+    if (info.types.length) {
+      const columns = [
+        {
+          title: 'type',
+          dataIndex: 'ty',
+          key: 'type',
+        },
+        {
+          title: 'clsid',
+          dataIndex: 'clsid',
+          key: 'clsid',
+        },
+        {
+          title: 'id',
+          dataIndex: 'id',
+          key: 'id',
+        },
+      ];
+
+      v.push(<Table dataSource={info.types} columns={columns} />);
     }
+
 
     v.push(
       <Flex gap="small">
@@ -231,6 +258,19 @@ const App = () => {
                     src={uint8ArrayToImageUrl(item.info?.icon)}
                   />
                   <Text> {item.name} </Text>
+                  <Button icon={<CopyOutlined />} size="small" onClick={e => {
+                    e.stopPropagation();
+                    e.preventDefault();
+                    navigator.clipboard.writeText(item.name);
+
+                  }} />
+                  <Text>|</Text>
+                  <Text> {item.id} </Text>
+                  <Button icon={<CopyOutlined />} size="small" onClick={e => {
+                    e.stopPropagation();
+                    e.preventDefault();
+                    navigator.clipboard.writeText(item.id);
+                  }} />
                 </Flex>
               ),
               key: item.id,
