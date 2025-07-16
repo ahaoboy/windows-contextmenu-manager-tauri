@@ -1,10 +1,9 @@
 use std::process::Command;
-
 use wcm::{Manager, Scope, Type};
 
 #[tauri::command]
 fn list(ty: Type, scope: Scope) -> Vec<wcm::MenuItem> {
-    ty.list(scope)
+    ty.list(Some(scope))
 }
 
 #[tauri::command]
@@ -29,14 +28,14 @@ fn disable_classic_menu() {
 
 #[tauri::command]
 fn disable(ty: Type, id: String, scope: Scope) -> Vec<wcm::MenuItem> {
-    let _ = ty.disable(&id, scope);
-    ty.list(scope)
+    let _ = ty.disable(&id, Some(scope));
+    ty.list(Some(scope))
 }
 
 #[tauri::command]
 fn enable(ty: Type, id: String, scope: Scope) -> Vec<wcm::MenuItem> {
-    let _ = ty.enable(&id, scope);
-    ty.list(scope)
+    let _ = ty.enable(&id, Some(scope));
+    ty.list(Some(scope))
 }
 
 #[tauri::command]

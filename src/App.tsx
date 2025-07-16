@@ -26,92 +26,41 @@ import {
   ReloadOutlined,
 } from "@ant-design/icons";
 import "./App.css";
-import { invoke } from "@tauri-apps/api/core";
 import { Typography } from "antd";
+import {
+  disable,
+  disable_classic_menu,
+  enable,
+  enable_classic_menu,
+  get_registry_path,
+  is_admin,
+  list,
+  menu_type,
+  MenuItem,
+  MenuItemInfo,
+  open_app_settings,
+  open_file_location,
+  open_store,
+  restart_explorer,
+  Scene,
+  SceneList,
+  Scope,
+  ScopeList,
+  Type,
+  uint8ArrayToImageUrl,
+  uninstall,
+} from "./lib";
 const { Text, Title } = Typography;
-
-type Type = "Win10" | "Win11";
-type Scope = "User" | "Machine";
-
-type TypeItem = {
-  id: string,
-  clsid: string,
-  ty: string
-}
-type MenuItemInfo = {
-  icon: Uint8Array | undefined;
-  publisher_display_name: string;
-  description: string;
-  types: TypeItem[];
-  family_name: string;
-  install_path: string;
-  full_name: string;
-};
-
-type MenuItem = {
-  id: string;
-  name: string;
-  enabled: boolean;
-  info?: MenuItemInfo;
-};
 const { Header, Content } = Layout;
-
-function uint8ArrayToImageUrl(
-  data: Uint8Array | undefined,
-  mimeType = "image/png",
-): string {
-  if (!data) {
-    return "/empty.png";
-  }
-  const blob = new Blob([new Uint8Array(data)], { type: mimeType });
-  return URL.createObjectURL(blob);
-}
-
-function restart_explorer() {
-  return invoke("restart_explorer");
-}
-function enable_classic_menu() {
-  return invoke("enable_classic_menu");
-}
-function disable_classic_menu() {
-  return invoke("disable_classic_menu");
-}
-function is_admin() {
-  return invoke<boolean>("is_admin");
-}
-function menu_type() {
-  return invoke<Type>("menu_type");
-}
-function enable(ty: Type, id: string, scope: Scope) {
-  return invoke<MenuItem[]>("enable", { ty, id, scope });
-}
-function disable(ty: Type, id: string, scope: Scope) {
-  return invoke<MenuItem[]>("disable", { ty, id, scope });
-}
-function list(ty: Type, scope: Scope) {
-  return invoke<MenuItem[]>("list", { ty, scope });
-}
-function open_file_location(path: string) {
-  return invoke("open_file_location", { path });
-}
-function open_app_settings() {
-  return invoke("open_app_settings");
-}
-function open_store(name: string) {
-  return invoke("open_store", { name });
-}
-function uninstall(fullname: string) {
-  console.log("uninstalling", fullname);
-  return invoke("uninstall", { fullname });
-}
 
 const App = () => {
   const [data, setData] = useState<MenuItem[]>([]);
   const [tabType, setTabType] = useState<Type>("Win11");
   const [menuType, setMenuType] = useState<Type>("Win11");
   const [scope, setScope] = useState<Scope>("User");
+  const [scene, setScene] = useState<Scene>("File");
   const [admin, setAdmin] = useState<boolean>(false);
-  const [spinning, setSpinning] = useState(false)
+  const [spinning, setSpinning] = useState(false);
 
   const update = async () => {
     setSpinning(true);
@@ -129,27 +78,75 @@ const App = () => {
     update();
   }, []);
 
+  useEffect(() => {
+    update();
+  }, [scope, tabType]);
+
   const Win10 = () => {
+    const items = data.filter((i) =>
+      get_registry_path(scene).some((p) =>
+        i.id.toLowerCase().startsWith(p.toLowerCase())
+      )
+    );
+
     return (
       <Content>
-        <List
-          itemLayout="horizontal"
-          dataSource={[...data, ...data]}
-          renderItem={(item) => (
-            <List.Item className="item-flex">
-              <Space align="start" className="item-space">
-                <Avatar shape="square" size={32} src={item.info?.icon} />
-                <div className="item-text">
-                  <div className="item-title">{item.name}</div>
-                  {/* <div className="item-desc">{item.description}</div> */}
-                </div>
-              </Space>
-              <Space>
-                <Switch checked={item.enabled} />
-                <DownOutlined />
-              </Space>
-            </List.Item>
-          )}
+        <Radio.Group
+          defaultValue="File"
+          value={scene}
+          onChange={(e) => {
+            setScene(e.target.value as Scene);
+          }}
+        >
+          {SceneList.map((v) => (
+            <Radio.Button value={v} key={v}>{v}</Radio.Button>
+          ))}
+        </Radio.Group>
+        <Collapse
+          expandIconPosition={"end"}
+          style={{ textAlign: "left" }}
+          items={items.map((item) => {
+            return {
+              label: (
+                <Flex align="center" justify="start" gap="small">
+                  <Avatar
+                    shape="square"
+                    src={uint8ArrayToImageUrl(item.info?.icon)}
+                  />
+                  <Text>{item.name}</Text>
+                  {
+                    /* <Button icon={<CopyOutlined />} size="small" onClick={e => {
+                    e.stopPropagation();
+                    e.preventDefault();
+                    navigator.clipboard.writeText(item.name);
+
+                  }} />
+                  <Text>|</Text>
+                  <Text> {item.id} </Text>
+                  <Button icon={<CopyOutlined />} size="small" onClick={e => {
+                    e.stopPropagation();
+                    e.preventDefault();
+                    navigator.clipboard.writeText(item.id);
+                  }} /> */
+                  }
+                </Flex>
+              ),
+              key: item.id,
+              children: JSON.stringify(item),
+              extra: (
+                <Switch
+                  checked={item.enabled}
+                  onChange={async (e, event) => {
+                    event.preventDefault();
+                    event.stopPropagation();
+                    const cmd = e ? enable : disable;
+                    const v = await cmd(tabType, item.id, scope);
+                    setData(v);
+                  }}
+                />
+              ),
+            };
+          })}
         />
       </Content>
     );
@@ -171,25 +168,24 @@ const App = () => {
     if (info.types.length) {
       const columns = [
         {
-          title: 'type',
-          dataIndex: 'ty',
-          key: 'type',
+          title: "type",
+          dataIndex: "ty",
+          key: "type",
         },
         {
-          title: 'clsid',
-          dataIndex: 'clsid',
-          key: 'clsid',
+          title: "clsid",
+          dataIndex: "clsid",
+          key: "clsid",
         },
         {
-          title: 'id',
-          dataIndex: 'id',
-          key: 'id',
+          title: "id",
+          dataIndex: "id",
+          key: "id",
         },
       ];
 
       v.push(<Table dataSource={info.types} columns={columns} />);
     }
-
 
     v.push(
       <Flex gap="small">
@@ -221,14 +217,10 @@ const App = () => {
         >
           Uninstall
         </Button>
-      </Flex>
-    )
+      </Flex>,
+    );
     return <>{...v}</>;
   };
-
-  useEffect(() => {
-    update();
-  }, [scope, tabType]);
 
   const Win11 = () => {
     return (
@@ -241,8 +233,9 @@ const App = () => {
               setScope(e.target.value as Scope);
             }}
           >
-            <Radio.Button value="User">User</Radio.Button>
-            <Radio.Button value="Machine">Machine</Radio.Button>
+            {ScopeList.map((v) => (
+              <Radio.Button value={v} key={v}>{v}</Radio.Button>
+            ))}
           </Radio.Group>
         )}
         <Collapse
@@ -256,20 +249,27 @@ const App = () => {
                     shape="square"
                     src={uint8ArrayToImageUrl(item.info?.icon)}
                   />
-                  <Text> {item.name} </Text>
-                  <Button icon={<CopyOutlined />} size="small" onClick={e => {
-                    e.stopPropagation();
-                    e.preventDefault();
-                    navigator.clipboard.writeText(item.name);
-
-                  }} />
+                  <Text>{item.name}</Text>
+                  <Button
+                    icon={<CopyOutlined />}
+                    size="small"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      e.preventDefault();
+                      navigator.clipboard.writeText(item.name);
+                    }}
+                  />
                   <Text>|</Text>
-                  <Text> {item.id} </Text>
-                  <Button icon={<CopyOutlined />} size="small" onClick={e => {
-                    e.stopPropagation();
-                    e.preventDefault();
-                    navigator.clipboard.writeText(item.id);
-                  }} />
+                  <Text>{item.id}</Text>
+                  <Button
+                    icon={<CopyOutlined />}
+                    size="small"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      e.preventDefault();
+                      navigator.clipboard.writeText(item.id);
+                    }}
+                  />
                 </Flex>
               ),
               key: item.id,
@@ -313,14 +313,27 @@ const App = () => {
             classic
           </Button>
           <Button icon={<ReloadOutlined />} onClick={update}>refresh</Button>
-          {menuType === 'Win11' ? <Button onClick={() => {
-            enable_classic_menu()
-            setMenuType("Win10");
-          }}>enable classic menu</Button> :
-            <Button onClick={() => {
-              disable_classic_menu();
-              setMenuType("Win11");
-            }}>disable classic menu</Button>}
+          {menuType === "Win11"
+            ? (
+              <Button
+                onClick={() => {
+                  enable_classic_menu();
+                  setMenuType("Win10");
+                }}
+              >
+                enable classic menu
+              </Button>
+            )
+            : (
+              <Button
+                onClick={() => {
+                  disable_classic_menu();
+                  setMenuType("Win11");
+                }}
+              >
+                disable classic menu
+              </Button>
+            )}
           <Button onClick={restart_explorer}>restart explorer</Button>
         </Space>
       </Flex>
