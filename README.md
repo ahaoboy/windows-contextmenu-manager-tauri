@@ -1,7 +1,11 @@
-# Tauri + React + Typescript
+# Windows Context Menu Manager
 
-This template should help get you started developing with Tauri, React and Typescript in Vite.
+**⚠️ Early Development Warning:**
+This project is still in early development. **Please back up your registry before making any changes!**
 
-## Recommended IDE Setup
+A graphical tool for managing the Windows context menu (right-click menu).
+Inspired by and referencing:
 
-- [VS Code](https://code.visualstudio.com/) + [Tauri](https://marketplace.visualstudio.com/items?itemName=tauri-apps.tauri-vscode) + [rust-analyzer](https://marketplace.visualstudio.com/items?itemName=rust-lang.rust-analyzer)
+- [branhill/windows-11-context-menu-manager](https://github.com/branhill/windows-11-context-menu-manager)
+- [BluePointLilac/ContextMenuManager](https://github.com/BluePointLilac/ContextMenuManager)
+- [ahaoboy/windows-contextmenu-manager](https://github.com/ahaoboy/windows-contextmenu-manager)
