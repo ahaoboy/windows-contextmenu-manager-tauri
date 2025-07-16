@@ -120,10 +120,10 @@ export function menu_type() {
   return invoke<Type>("menu_type");
 }
 export function enable(ty: Type, id: string, scope: Scope) {
-  return invoke<MenuItem[]>("enable", { ty, id, scope });
+  return invoke("enable", { ty, id, scope });
 }
 export function disable(ty: Type, id: string, scope: Scope) {
-  return invoke<MenuItem[]>("disable", { ty, id, scope });
+  return invoke("disable", { ty, id, scope });
 }
 export function list(ty: Type, scope: Scope) {
   return invoke<MenuItem[]>("list", { ty, scope });

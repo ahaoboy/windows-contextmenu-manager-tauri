@@ -140,8 +140,9 @@ const App = () => {
                     event.preventDefault();
                     event.stopPropagation();
                     const cmd = e ? enable : disable;
-                    const v = await cmd(tabType, item.id, scope);
-                    setData(v);
+                    await cmd(tabType, item.id, scope);
+                    item.enabled = e
+                    setData([...data]);
                   }}
                 />
               ),
@@ -281,8 +282,9 @@ const App = () => {
                     event.preventDefault();
                     event.stopPropagation();
                     const cmd = e ? enable : disable;
-                    const v = await cmd(tabType, item.id, scope);
-                    setData(v);
+                    await cmd(tabType, item.id, scope);
+                    item.enabled = e
+                    setData([...data]);
                   }}
                 />
               ),

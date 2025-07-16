@@ -27,15 +27,13 @@ fn disable_classic_menu() {
 }
 
 #[tauri::command]
-fn disable(ty: Type, id: String, scope: Scope) -> Vec<wcm::MenuItem> {
+fn disable(ty: Type, id: String, scope: Scope)   {
     let _ = ty.disable(&id, Some(scope));
-    ty.list(Some(scope))
 }
 
 #[tauri::command]
-fn enable(ty: Type, id: String, scope: Scope) -> Vec<wcm::MenuItem> {
+fn enable(ty: Type, id: String, scope: Scope)  {
     let _ = ty.enable(&id, Some(scope));
-    ty.list(Some(scope))
 }
 
 #[tauri::command]
