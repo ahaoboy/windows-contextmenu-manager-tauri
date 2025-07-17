@@ -21,6 +21,8 @@ import {
 import "./App.css";
 import { Typography } from "antd";
 import {
+  backup,
+  download,
   disable,
   disable_classic_menu,
   enable,
@@ -30,7 +32,6 @@ import {
   list,
   menu_type,
   MenuItem,
-  MenuItemInfo,
   open_app_settings,
   open_file_location,
   open_store,
@@ -146,14 +147,18 @@ const App = () => {
     );
   };
 
-  const get_extra = (info: MenuItemInfo | undefined) => {
+  const get_extra = (item: MenuItem) => {
+    const level = 5;
+    const v: ReactElement[] = [];
+    const { info, } = item
+    for (const k of ["id"] as const) {
+      v.push(<Title level={level}>{k}: {item[k]}</Title>);
+    }
     if (!info) {
       return;
     }
-    const level = 5;
-    const v: ReactElement[] = [];
 
-    for (const k of ["publisher_display_name", "description"] as const) {
+    for (const k of ["publisher_display_name", "description", "full_name"] as const) {
       if (info[k]) {
         v.push(<Title level={level}>{k}: {info[k]}</Title>);
       }
@@ -267,7 +272,7 @@ const App = () => {
                 </Flex>
               ),
               key: item.id,
-              children: get_extra(item.info),
+              children: get_extra(item),
               extra: (
                 <Switch
                   checked={item.enabled}
@@ -330,6 +335,11 @@ const App = () => {
               </Button>
             )}
           <Button onClick={restart_explorer}>restart explorer</Button>
+          <Button onClick={async () => {
+            const s = await backup(tabType, scope)
+            const name = tabType === 'Win11' ? `backup-${tabType}-${scope}.json` : `backup-${tabType}.json`
+            download(s, name)
+          }}>backup</Button>
         </Space>
       </Flex>
       <Tabs

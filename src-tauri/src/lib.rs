@@ -2,8 +2,8 @@ use std::process::Command;
 use wcm::{Manager, Scope, Type};
 
 #[tauri::command]
-fn list(ty: Type, scope: Scope) -> Vec<wcm::MenuItem> {
-    ty.list(Some(scope))
+fn list(ty: Type, scope: Option<Scope>) -> Vec<wcm::MenuItem> {
+    ty.list(scope)
 }
 
 #[tauri::command]
@@ -27,13 +27,13 @@ fn disable_classic_menu() {
 }
 
 #[tauri::command]
-fn disable(ty: Type, id: String, scope: Scope)   {
-    let _ = ty.disable(&id, Some(scope));
+fn disable(ty: Type, id: String, scope: Option<Scope>) {
+    let _ = ty.disable(&id, scope);
 }
 
 #[tauri::command]
-fn enable(ty: Type, id: String, scope: Scope)  {
-    let _ = ty.enable(&id, Some(scope));
+fn enable(ty: Type, id: String, scope: Option<Scope>) {
+    let _ = ty.enable(&id, scope);
 }
 
 #[tauri::command]
@@ -56,7 +56,7 @@ fn open_app_settings() {
 }
 #[tauri::command]
 fn open_store(name: &str) {
-    let uri = format!("ms-windows-store://pdp/?PFN={}", name);
+    let uri = format!("ms-windows-store://pdp/?PFN={name}");
     let _ = Command::new("powershell")
         .args(["-c", &format!("start {uri}")])
         .spawn();
@@ -64,11 +64,18 @@ fn open_store(name: &str) {
 
 #[tauri::command]
 fn uninstall(fullname: &str) {
-    let cmd = format!("Remove-AppxPackage {} -Confirm", fullname);
+    let cmd = format!("Remove-AppxPackage {fullname} -Confirm");
 
     let _ = Command::new("cmd")
         .args(["/C", "start", "powershell", "-NoExit", "-Command", &cmd])
         .spawn();
+}
+
+#[tauri::command]
+fn backup(ty: Type, scope: Option<Scope>) -> String {
+    let v = ty.list(scope);
+
+    serde_json::to_string(&v).unwrap_or_default()
 }
 
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
@@ -88,6 +95,7 @@ pub fn run() {
             open_app_settings,
             open_store,
             uninstall,
+            backup,
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");

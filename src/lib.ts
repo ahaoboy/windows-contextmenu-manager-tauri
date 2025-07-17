@@ -141,7 +141,9 @@ export function open_store(name: string) {
 export function uninstall(fullname: string) {
   return invoke("uninstall", { fullname });
 }
-
+export function backup(ty: Type, scope: Scope) {
+  return invoke<string>("backup", { ty, scope });
+}
 export const ScopeList: Scope[] = [
   "User",
   "Machine",
@@ -154,3 +156,19 @@ export const ScopeList: Scope[] = [
 // export function get_all_scope() {
 //   return invoke<Scope[]>("get_all_scope");
 // }
+
+export function download(s: string, filename = "backup.json") {
+  const blob = new Blob([s], { type: 'application/json' });
+
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+
+  a.href = url;
+  a.download = filename;
+
+  document.body.appendChild(a);
+  a.click();
+
+  document.body.removeChild(a);
+  URL.revokeObjectURL(url);
+}
