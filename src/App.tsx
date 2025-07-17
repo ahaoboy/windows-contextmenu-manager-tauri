@@ -10,7 +10,9 @@ import {
   Spin,
   Switch,
   Table,
+  TableProps,
   Tabs,
+  Tag,
 } from "antd";
 import {
   CheckOutlined,
@@ -46,6 +48,82 @@ import {
 } from "./lib";
 const { Text, Title } = Typography;
 const { Content } = Layout;
+
+
+const MoreInfoWin11 = ({ item }: { item: MenuItem }) => {
+  const level = 5;
+  const v: ReactElement[] = [];
+  const { info, } = item
+  for (const k of ["id"] as const) {
+    v.push(<Title level={level}>{k}: {item[k]}</Title>);
+  }
+  if (!info) {
+    return;
+  }
+
+  const dataSource: Record<string, string>[] = [];
+
+  for (const name of ["publisher_display_name", "description", "full_name"] as const) {
+    if (info[name]) {
+      dataSource.push({
+        name,
+        value: info[name]
+      })
+    }
+  }
+
+  if (info.types.length) {
+    dataSource.push({ name: "type", value: info.types.map(i => i.ty).join("  |  ") })
+  }
+
+  const columns: TableProps<Record<string, string>>['columns'] = [
+    {
+      title: "name",
+      dataIndex: "name",
+      key: "name",
+    },
+    {
+      title: "value",
+      dataIndex: "value",
+      key: "value",
+    }
+  ];
+
+  return <Flex gap="small" vertical>
+    <Table dataSource={dataSource} columns={columns} pagination={false} showHeader={false} />
+    <Flex gap="small"  >
+      <Button
+        onClick={() => {
+          open_file_location(info.install_path);
+        }}
+      >
+        Open File Location
+      </Button>
+      <Button
+        onClick={() => {
+          open_app_settings();
+        }}
+      >
+        Open App Settings
+      </Button>
+      <Button
+        onClick={() => {
+          open_store(info.family_name);
+        }}
+      >
+        Open Store
+      </Button>
+      <Button
+        onClick={() => {
+          uninstall(info.full_name);
+        }}
+      >
+        Uninstall
+      </Button>
+    </Flex>
+
+  </Flex>
+};
 
 const App = () => {
   const [data, setData] = useState<MenuItem[]>([]);
@@ -146,6 +224,7 @@ const App = () => {
       </Content>
     );
   };
+
 
   const get_extra = (item: MenuItem) => {
     const level = 5;
@@ -272,7 +351,7 @@ const App = () => {
                 </Flex>
               ),
               key: item.id,
-              children: get_extra(item),
+              children: <MoreInfoWin11 item={item} />,
               extra: (
                 <Switch
                   checked={item.enabled}
@@ -346,7 +425,7 @@ const App = () => {
         defaultActiveKey="Win11"
         centered
         onChange={(e) => {
-          console.log(e);
+          // console.log(e);
           setTabType(e as Type);
           update();
         }}
