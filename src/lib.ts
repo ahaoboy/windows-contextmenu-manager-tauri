@@ -149,14 +149,6 @@ export const ScopeList: Scope[] = [
   "Machine",
 ];
 
-// export function get_all_scene() {
-//   return invoke<Scene[]>("get_all_scene");
-// }
-
-// export function get_all_scope() {
-//   return invoke<Scope[]>("get_all_scope");
-// }
-
 export function download(s: string, filename = "backup.json") {
   const blob = new Blob([s], { type: 'application/json' });
 
