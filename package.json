@@ -4,6 +4,7 @@
   "version": "0.1.0",
   "type": "module",
   "scripts": {
+    "cargo-update": "cd src-tauri && cargo update",
     "dev": "vite",
     "build": "vite build",
     "preview": "vite preview",
