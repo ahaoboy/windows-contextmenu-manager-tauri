@@ -1,9 +1,11 @@
-name: Test
+name: build
 
 permissions:
   contents: write
 
-on: [push]
+on:
+  push:
+  workflow_dispatch:
 
 env:
   CARGO_TERM_COLOR: always
@@ -13,7 +15,7 @@ defaults:
     shell: bash --noprofile --norc -CeEuo pipefail {0}
 
 jobs:
-  rust-test:
+  rust-build:
     strategy:
       fail-fast: false
       matrix:
