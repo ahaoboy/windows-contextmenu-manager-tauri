@@ -1,14 +1,10 @@
-import React, { ReactElement, useEffect, useState } from "react";
+import { ReactElement, useEffect, useState } from "react";
 import {
   Avatar,
   Button,
   Collapse,
-  Dropdown,
   Flex,
-  Input,
   Layout,
-  List,
-  Menu,
   Radio,
   Space,
   Spin,
@@ -17,12 +13,9 @@ import {
   Tabs,
 } from "antd";
 import {
-  CheckCircleOutlined,
   CheckOutlined,
-  CloseCircleOutlined,
   CloseOutlined,
   CopyOutlined,
-  DownOutlined,
   ReloadOutlined,
 } from "@ant-design/icons";
 import "./App.css";
@@ -51,7 +44,7 @@ import {
   uninstall,
 } from "./lib";
 const { Text, Title } = Typography;
-const { Header, Content } = Layout;
+const { Content } = Layout;
 
 const App = () => {
   const [data, setData] = useState<MenuItem[]>([]);
@@ -103,7 +96,7 @@ const App = () => {
           ))}
         </Radio.Group>
         <Collapse
-          expandIconPosition={"end"}
+          expandIconPosition="end"
           style={{ textAlign: "left" }}
           items={items.map((item) => {
             return {
@@ -141,7 +134,7 @@ const App = () => {
                     event.stopPropagation();
                     const cmd = e ? enable : disable;
                     await cmd(tabType, item.id, scope);
-                    item.enabled = e
+                    item.enabled = e;
                     setData([...data]);
                   }}
                 />
@@ -155,7 +148,7 @@ const App = () => {
 
   const get_extra = (info: MenuItemInfo | undefined) => {
     if (!info) {
-      return <></>;
+      return;
     }
     const level = 5;
     const v: ReactElement[] = [];
@@ -240,7 +233,7 @@ const App = () => {
           </Radio.Group>
         )}
         <Collapse
-          expandIconPosition={"end"}
+          expandIconPosition="end"
           style={{ textAlign: "left" }}
           items={data.map((item) => {
             return {
@@ -283,7 +276,7 @@ const App = () => {
                     event.stopPropagation();
                     const cmd = e ? enable : disable;
                     await cmd(tabType, item.id, scope);
-                    item.enabled = e
+                    item.enabled = e;
                     setData([...data]);
                   }}
                 />
