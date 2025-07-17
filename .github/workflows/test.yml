@@ -39,20 +39,21 @@ jobs:
       - uses: easy-install/easy-setup@v1
         with:
           url: https://github.com/ahaoboy/easy-install/raw/refs/heads/main/dist-manifest/7zip.json
+          name: 7z
       - name: zip
         run: |
-          for item in msi exe; do
+          for item in msi nsis; do
             mkdir ./$item
             cp -r ./src-tauri/target/release/bundle/$item ./$item
             cd ./$item
             7z a -tzip "../$item.zip" . -r
             cd ..
           done
-      - name: Upload exe
+      - name: Upload nsis
         uses: actions/upload-artifact@v4
         with:
-          name: exe
-          path: ./exe.zip
+          name: nsis
+          path: ./nsis.zip
       - name: Upload msi
         uses: actions/upload-artifact@v4
         with:
