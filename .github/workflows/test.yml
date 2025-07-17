@@ -36,13 +36,16 @@ jobs:
       - name: build
         run: |
           pnpm run tauri build
+      - uses: easy-install/easy-setup@v1
+        with:
+          url: https://github.com/ahaoboy/easy-install/raw/refs/heads/main/dist-manifest/7zip.json
       - name: zip
         run: |
           for item in msi exe; do
             mkdir ./$item
             cp -r ./src-tauri/target/release/bundle/$item ./$item
             cd ./$item
-            zip -r -q $item.zip .
+            7z a -tzip "../$item.zip" . -r
             cd ..
           done
       - name: Upload exe
