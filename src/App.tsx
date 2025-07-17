@@ -173,11 +173,11 @@ const App = () => {
           dataIndex: "ty",
           key: "type",
         },
-        {
-          title: "clsid",
-          dataIndex: "clsid",
-          key: "clsid",
-        },
+        // {
+        //   title: "clsid",
+        //   dataIndex: "clsid",
+        //   key: "clsid",
+        // },
         {
           title: "id",
           dataIndex: "id",
