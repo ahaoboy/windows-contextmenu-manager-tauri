@@ -1,0 +1,57 @@
+name: Test
+
+permissions:
+  contents: write
+
+on: [push]
+
+env:
+  CARGO_TERM_COLOR: always
+
+defaults:
+  run:
+    shell: bash --noprofile --norc -CeEuo pipefail {0}
+
+jobs:
+  rust-test:
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [windows-latest]
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v3
+      - uses: actions/setup-node@v4
+      - uses: actions-rust-lang/setup-rust-toolchain@v1
+        with:
+          components: rustfmt,clippy
+          rustflags: "-A warnings"
+          toolchain: "stable"
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 10
+      - name: install
+        run: |
+          pnpm install
+      - name: build
+        run: |
+          pnpm run tauri build
+      - name: zip
+        run: |
+          for item in msi exe; do
+            mkdir ./$item
+            cp -r ./src-tauri/target/release/bundle/$item ./$item
+            cd ./$item
+            zip -r -q $item.zip .
+            cd ..
+          done
+      - name: Upload exe
+        uses: actions/upload-artifact@v4
+        with:
+          name: exe
+          path: ./exe.zip
+      - name: Upload msi
+        uses: actions/upload-artifact@v4
+        with:
+          name: msi
+          path: ./msi.zip
