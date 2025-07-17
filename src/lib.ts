@@ -1,14 +1,13 @@
 import { invoke } from "@tauri-apps/api/core";
 
-export function uint8ArrayToImageUrl(
-  data: Uint8Array | undefined,
+export function base64ToImageUrl(
+  data: string | undefined,
   mimeType = "image/png",
 ): string {
   if (!data) {
     return "/empty.png";
   }
-  const blob = new Blob([new Uint8Array(data)], { type: mimeType });
-  return URL.createObjectURL(blob);
+  return `data:${mimeType};base64,${data}`
 }
 
 export type Type = "Win10" | "Win11";
@@ -88,7 +87,7 @@ export type TypeItem = {
   ty: string;
 };
 export type MenuItemInfo = {
-  icon: Uint8Array | undefined;
+  icon: string | undefined;
   publisher_display_name: string;
   description: string;
   types: TypeItem[];

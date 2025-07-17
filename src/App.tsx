@@ -41,7 +41,7 @@ import {
   Scope,
   ScopeList,
   Type,
-  uint8ArrayToImageUrl,
+  base64ToImageUrl,
   uninstall,
 } from "./lib";
 const { Text, Title } = Typography;
@@ -105,7 +105,7 @@ const App = () => {
                 <Flex align="center" justify="start" gap="small">
                   <Avatar
                     shape="square"
-                    src={uint8ArrayToImageUrl(item.info?.icon)}
+                    src={base64ToImageUrl(item.info?.icon)}
                   />
                   <Text>{item.name}</Text>
                   {
@@ -246,7 +246,7 @@ const App = () => {
                 <Flex align="center" justify="start" gap="small">
                   <Avatar
                     shape="square"
-                    src={uint8ArrayToImageUrl(item.info?.icon)}
+                    src={base64ToImageUrl(item.info?.icon)}
                   />
                   <Text>{item.name}</Text>
                   <Button
