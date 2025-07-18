@@ -7,7 +7,7 @@ export function base64ToImageUrl(
   if (!data) {
     return "/empty.png";
   }
-  return `data:${mimeType};base64,${data}`
+  return `data:${mimeType};base64,${data}`;
 }
 
 export type Type = "Win10" | "Win11";
@@ -149,10 +149,10 @@ export const ScopeList: Scope[] = [
 ];
 
 export function download(s: string, filename = "backup.json") {
-  const blob = new Blob([s], { type: 'application/json' });
+  const blob = new Blob([s], { type: "application/json" });
 
   const url = URL.createObjectURL(blob);
-  const a = document.createElement('a');
+  const a = document.createElement("a");
 
   a.href = url;
   a.download = filename;

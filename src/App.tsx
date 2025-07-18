@@ -6,27 +6,31 @@ import {
   Flex,
   Layout,
   Radio,
+  Select,
   Space,
   Spin,
   Switch,
   Table,
   TableProps,
   Tabs,
-  Tag,
 } from "antd";
 import {
   CheckOutlined,
   CloseOutlined,
   CopyOutlined,
+  MoonOutlined,
   ReloadOutlined,
+  SunOutlined,
+  TranslationOutlined,
 } from "@ant-design/icons";
 import "./App.css";
 import { Typography } from "antd";
 import {
   backup,
-  download,
+  base64ToImageUrl,
   disable,
   disable_classic_menu,
+  download,
   enable,
   enable_classic_menu,
   get_registry_path,
@@ -43,17 +47,22 @@ import {
   Scope,
   ScopeList,
   Type,
-  base64ToImageUrl,
   uninstall,
 } from "./lib";
+import { useTranslation } from "react-i18next";
+import { I18nResources } from "./i18n";
+import { ConfigProvider, theme } from "antd";
+const { defaultAlgorithm, darkAlgorithm } = theme;
+const isDark = globalThis.matchMedia("(prefers-color-scheme: dark)").matches;
 const { Text, Title } = Typography;
 const { Content } = Layout;
 
-
 const MoreInfoWin11 = ({ item }: { item: MenuItem }) => {
+  const { t } = useTranslation();
+
   const level = 5;
   const v: ReactElement[] = [];
-  const { info, } = item
+  const { info } = item;
   for (const k of ["id"] as const) {
     v.push(<Title level={level}>{k}: {item[k]}</Title>);
   }
@@ -63,20 +72,29 @@ const MoreInfoWin11 = ({ item }: { item: MenuItem }) => {
 
   const dataSource: Record<string, string>[] = [];
 
-  for (const name of ["publisher_display_name", "description", "full_name"] as const) {
+  for (
+    const name of [
+      "publisher_display_name",
+      "description",
+      "full_name",
+    ] as const
+  ) {
     if (info[name]) {
       dataSource.push({
         name,
-        value: info[name]
-      })
+        value: info[name],
+      });
     }
   }
 
   if (info.types.length) {
-    dataSource.push({ name: "type", value: info.types.map(i => i.ty).join("  |  ") })
+    dataSource.push({
+      name: "type",
+      value: info.types.map((i) => i.ty).join("  |  "),
+    });
   }
 
-  const columns: TableProps<Record<string, string>>['columns'] = [
+  const columns: TableProps<Record<string, string>>["columns"] = [
     {
       title: "name",
       dataIndex: "name",
@@ -86,44 +104,66 @@ const MoreInfoWin11 = ({ item }: { item: MenuItem }) => {
       title: "value",
       dataIndex: "value",
       key: "value",
-    }
+    },
   ];
 
-  return <Flex gap="small" vertical>
-    <Table dataSource={dataSource} columns={columns} pagination={false} showHeader={false} />
-    <Flex gap="small"  >
-      <Button
-        onClick={() => {
-          open_file_location(info.install_path);
-        }}
-      >
-        Open File Location
-      </Button>
-      <Button
-        onClick={() => {
-          open_app_settings();
-        }}
-      >
-        Open App Settings
-      </Button>
-      <Button
-        onClick={() => {
-          open_store(info.family_name);
-        }}
-      >
-        Open Store
-      </Button>
-      <Button
-        onClick={() => {
-          uninstall(info.full_name);
-        }}
-      >
-        Uninstall
-      </Button>
+  return (
+    <Flex gap="small" vertical>
+      <Table
+        dataSource={dataSource}
+        columns={columns}
+        pagination={false}
+        showHeader={false}
+      />
+      <Flex gap="small">
+        <Button
+          onClick={() => {
+            open_file_location(info.install_path);
+          }}
+        >
+          {t("Open File Location")}
+        </Button>
+        <Button
+          onClick={() => {
+            open_app_settings();
+          }}
+        >
+          {t("Open App Settings")}
+        </Button>
+        <Button
+          onClick={() => {
+            open_store(info.family_name);
+          }}
+        >
+          {t("Open Store")}
+        </Button>
+        <Button
+          onClick={() => {
+            uninstall(info.full_name);
+          }}
+        >
+          {t("Uninstall")}
+        </Button>
+      </Flex>
     </Flex>
-
-  </Flex>
+  );
 };
+
+function LanguageSwitcher() {
+  const { i18n } = useTranslation();
+  const langs = Object.entries(I18nResources).map(([lang, item]) => ({
+    value: lang,
+    label: item["translation"]["language"],
+  }));
+  return (
+    <Select
+      suffixIcon={<TranslationOutlined />}
+      defaultValue="English"
+      onChange={(lang) => i18n.changeLanguage(lang)}
+      options={langs}
+    />
+  );
+}
 
 const App = () => {
   const [data, setData] = useState<MenuItem[]>([]);
@@ -133,12 +173,14 @@ const App = () => {
   const [scene, setScene] = useState<Scene>("File");
   const [admin, setAdmin] = useState<boolean>(false);
   const [spinning, setSpinning] = useState(false);
+  const [dark, setDark] = useState(isDark);
+  const { t } = useTranslation();
 
   const update = async () => {
     setSpinning(true);
     const v = await list(tabType, scope);
     setData(v);
-    console.log(v);
+    // console.log(v);
     const t = await menu_type();
     setMenuType(t);
     const admin = await is_admin();
@@ -225,81 +267,6 @@ const App = () => {
     );
   };
 
-
-  const get_extra = (item: MenuItem) => {
-    const level = 5;
-    const v: ReactElement[] = [];
-    const { info, } = item
-    for (const k of ["id"] as const) {
-      v.push(<Title level={level}>{k}: {item[k]}</Title>);
-    }
-    if (!info) {
-      return;
-    }
-
-    for (const k of ["publisher_display_name", "description", "full_name"] as const) {
-      if (info[k]) {
-        v.push(<Title level={level}>{k}: {info[k]}</Title>);
-      }
-    }
-
-    if (info.types.length) {
-      const columns = [
-        {
-          title: "type",
-          dataIndex: "ty",
-          key: "type",
-        },
-        // {
-        //   title: "clsid",
-        //   dataIndex: "clsid",
-        //   key: "clsid",
-        // },
-        {
-          title: "id",
-          dataIndex: "id",
-          key: "id",
-        },
-      ];
-
-      v.push(<Table dataSource={info.types} columns={columns} />);
-    }
-
-    v.push(
-      <Flex gap="small">
-        <Button
-          onClick={() => {
-            open_file_location(info.install_path);
-          }}
-        >
-          Open File Location
-        </Button>
-        <Button
-          onClick={() => {
-            open_app_settings();
-          }}
-        >
-          Open App Settings
-        </Button>
-        <Button
-          onClick={() => {
-            open_store(info.family_name);
-          }}
-        >
-          Open Store
-        </Button>
-        <Button
-          onClick={() => {
-            uninstall(info.full_name);
-          }}
-        >
-          Uninstall
-        </Button>
-      </Flex>,
-    );
-    return <>{...v}</>;
-  };
-
   const Win11 = () => {
     return (
       <Content>
@@ -373,76 +340,99 @@ const App = () => {
   };
 
   return (
-    <Layout className="container">
-      <Spin spinning={spinning} fullscreen />
+    <ConfigProvider
+      theme={{ algorithm: dark ? darkAlgorithm : defaultAlgorithm }}
+    >
+      <Layout className="container">
+        <Spin spinning={spinning} fullscreen />
+        <Flex justify="center" className="header-flex">
+          <Space>
+            <Button
+              icon={admin ? <CheckOutlined /> : <CloseOutlined />}
+              disabled
+              onClick={update}
+            >
+              {t("admin")}
+            </Button>
+            <Button
+              disabled
+              icon={menuType === "Win10"
+                ? <CheckOutlined />
+                : <CloseOutlined />}
+            >
+              {t("classic")}
+            </Button>
+            <Button icon={<ReloadOutlined />} onClick={update}>
+              {t("refresh")}
+            </Button>
+            {menuType === "Win11"
+              ? (
+                <Button
+                  onClick={() => {
+                    enable_classic_menu();
+                    setMenuType("Win10");
+                  }}
+                >
+                  {t("enable classic menu")}
+                </Button>
+              )
+              : (
+                <Button
+                  onClick={() => {
+                    disable_classic_menu();
+                    setMenuType("Win11");
+                  }}
+                >
+                  {t("disable classic menu")}
+                </Button>
+              )}
+            <Button onClick={restart_explorer}>{t("restart explorer")}</Button>
+            <Button
+              onClick={async () => {
+                const s = await backup(tabType, scope);
+                const name = tabType === "Win11"
+                  ? `backup-${tabType}-${scope}.json`
+                  : `backup-${tabType}.json`;
+                download(s, name);
+              }}
+            >
+              {t("backup")}
+            </Button>
+            <LanguageSwitcher />
 
-      <Flex justify="center" className="header-flex">
-        <Space>
-          <Button
-            icon={admin ? <CheckOutlined /> : <CloseOutlined />}
-            disabled
-            onClick={update}
-          >
-            admin
-          </Button>
-          <Button
-            disabled
-            icon={menuType === "Win10" ? <CheckOutlined /> : <CloseOutlined />}
-          >
-            classic
-          </Button>
-          <Button icon={<ReloadOutlined />} onClick={update}>refresh</Button>
-          {menuType === "Win11"
-            ? (
-              <Button
-                onClick={() => {
-                  enable_classic_menu();
-                  setMenuType("Win10");
-                }}
-              >
-                enable classic menu
-              </Button>
-            )
-            : (
-              <Button
-                onClick={() => {
-                  disable_classic_menu();
-                  setMenuType("Win11");
-                }}
-              >
-                disable classic menu
-              </Button>
-            )}
-          <Button onClick={restart_explorer}>restart explorer</Button>
-          <Button onClick={async () => {
-            const s = await backup(tabType, scope)
-            const name = tabType === 'Win11' ? `backup-${tabType}-${scope}.json` : `backup-${tabType}.json`
-            download(s, name)
-          }}>backup</Button>
-        </Space>
-      </Flex>
-      <Tabs
-        defaultActiveKey="Win11"
-        centered
-        onChange={(e) => {
-          // console.log(e);
-          setTabType(e as Type);
-          update();
-        }}
-        items={[
-          {
-            label: `Win11`,
-            key: "Win11",
-            children: <Win11 />,
-          },
-          {
-            label: `Win10`,
-            key: "Win10",
-            children: <Win10 />,
-          },
-        ]}
-      />
-    </Layout>
+            <Select
+              defaultValue={isDark}
+              onChange={(v) => setDark(v)}
+              options={[
+                { label: <MoonOutlined />, value: true },
+                { label: <SunOutlined />, value: false },
+              ]}
+            />
+          </Space>
+        </Flex>
+        <Tabs
+          defaultActiveKey="Win11"
+          centered
+          onChange={(e) => {
+            // console.log(e);
+            setTabType(e as Type);
+            update();
+          }}
+          items={[
+            {
+              label: `Win11`,
+              key: "Win11",
+              children: <Win11 />,
+            },
+            {
+              label: `Win10`,
+              key: "Win10",
+              children: <Win10 />,
+            },
+          ]}
+        />
+      </Layout>
+    </ConfigProvider>
   );
 };
 
