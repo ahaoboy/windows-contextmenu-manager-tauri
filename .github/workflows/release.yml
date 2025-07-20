@@ -19,6 +19,7 @@ env:
 
 jobs:
   publish-tauri:
+    if: ${{ startsWith(github.ref, 'refs/tags/') }}
     permissions:
       contents: write
     strategy:
