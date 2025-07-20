@@ -259,7 +259,7 @@ const App = () => {
               ),
               extra: (
                 <Flex gap="small" align="center" justify="center">
-                  <Button
+                  {item.enabled && <Button
                     icon={<DownloadOutlined />}
                     size="small"
                     onClick={(e) => {
@@ -267,7 +267,7 @@ const App = () => {
                       e.preventDefault();
                       downloadReg(item);
                     }}
-                  />
+                  />}
                   <Switch
                     checked={item.enabled}
                     onChange={async (e, event) => {
