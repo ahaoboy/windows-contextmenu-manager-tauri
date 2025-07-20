@@ -129,10 +129,10 @@ export type TypeItem = {
 };
 
 export type RegItem = {
-  path: string
+  path: string;
   values: Record<string, string>;
   children?: RegItem[];
-}
+};
 
 export type MenuItemInfo = {
   icon: string | undefined;
@@ -142,8 +142,8 @@ export type MenuItemInfo = {
   family_name: string;
   install_path: string;
   full_name: string;
-  reg: RegItem | undefined
-  reg_txt: string | undefined
+  reg: RegItem | undefined;
+  reg_txt: string | undefined;
 };
 
 export type MenuItem = {
@@ -220,11 +220,12 @@ export function download(s: string, filename = "backup.json") {
   URL.revokeObjectURL(url);
 }
 
+const HACK_CHAR = "𰻞"; // A character that is unlikely to appear in normal text
 export function normalizeAmpersands(input: string) {
   return input
-    .replace(/&&/g, "\u0000")
-    .replace(/&/g, "")
-    .replace(/\u0000/g, "&");
+    .replace("&&", HACK_CHAR)
+    .replace("&", "")
+    .replace(HACK_CHAR, "&");
 }
 
 function downloadUTF16LEFile(data: Uint8Array, filename: string) {

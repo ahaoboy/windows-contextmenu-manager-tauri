@@ -4,6 +4,9 @@
   "version": "0.1.0",
   "type": "module",
   "scripts": {
+    "lint": "pnpm run lint-ts && pnpm run lint-rs",
+    "lint-ts": "cd src && deno fmt && deno lint --fix",
+    "lint-rs": "cd src-tauri && cargo fmt --all &&  cargo clippy --fix --allow-dirty --allow-staged",
     "cargo-update": "cd src-tauri && cargo update",
     "dev": "vite",
     "build": "vite build",
@@ -15,6 +18,7 @@
     "@ant-design/v5-patch-for-react-19": "^1.0.3",
     "@tauri-apps/api": "2.6.0",
     "@tauri-apps/plugin-opener": "2.4.0",
+    "@tauri-apps/plugin-updater": "~2.9.0",
     "antd": "^5.26.4",
     "i18next": "^25.3.2",
     "i18next-browser-languagedetector": "^8.2.0",

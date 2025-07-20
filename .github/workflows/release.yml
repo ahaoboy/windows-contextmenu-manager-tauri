@@ -4,6 +4,9 @@ on:
   push:
     branches:
       - release
+    tags:
+      - '*'
+  workflow_dispatch:
 
 defaults:
   run:
@@ -17,6 +20,7 @@ env:
 
 jobs:
   publish-tauri:
+    if: ${{ startsWith(github.ref, 'refs/tags/') }}
     permissions:
       contents: write
     strategy:
