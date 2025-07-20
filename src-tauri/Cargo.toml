@@ -27,10 +27,9 @@ serde = { version = "1", features = ["derive"] }
 serde_json = "1"
 wcm = { git = "https://github.com/ahaoboy/windows-contextmenu-manager.git" }
 # wcm = { path = "../../wcm" }
-
 is-admin = { version = "0.1", git = "https://github.com/ahaoboy/is-admin" }
 anyhow = "1"
-easy-archive = {version = "0.2", git = "https://github.com/ahaoboy/easy-archive.git"}
+easy-archive = { version = "0.2", git = "https://github.com/ahaoboy/easy-archive.git" }
 
 [target.'cfg(not(any(target_os = "android", target_os = "ios")))'.dependencies]
 tauri-plugin-single-instance = "2"
