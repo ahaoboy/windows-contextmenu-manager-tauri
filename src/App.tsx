@@ -18,6 +18,7 @@ import {
   CheckOutlined,
   CloseOutlined,
   CopyOutlined,
+  DownloadOutlined,
   MoonOutlined,
   ReloadOutlined,
   SunOutlined,
@@ -31,13 +32,15 @@ import {
   disable,
   disable_classic_menu,
   download,
+  downloadReg,
   enable,
   enable_classic_menu,
-  get_registry_path,
   is_admin,
   list,
+  match_scene,
   menu_type,
   MenuItem,
+  normalizeAmpersands,
   open_app_settings,
   open_file_location,
   open_store,
@@ -150,7 +153,7 @@ const MoreInfoWin11 = ({ item }: { item: MenuItem }) => {
 };
 
 function LanguageSwitcher() {
-  const { i18n } = useTranslation();
+  const { i18n, t } = useTranslation();
   const langs = Object.entries(I18nResources).map(([lang, item]) => ({
     value: lang,
     label: item["translation"]["language"],
@@ -158,7 +161,7 @@ function LanguageSwitcher() {
   return (
     <Select
       suffixIcon={<TranslationOutlined />}
-      defaultValue="English"
+      defaultValue={t("language")}
       onChange={(lang) => i18n.changeLanguage(lang)}
       options={langs}
     />
@@ -179,6 +182,7 @@ const App = () => {
   const update = async () => {
     setSpinning(true);
     const v = await list(tabType, scope);
+    console.log(tabType, v);
     setData(v);
     // console.log(v);
     const t = await menu_type();
@@ -197,11 +201,7 @@ const App = () => {
   }, [scope, tabType]);
 
   const Win10 = () => {
-    const items = data.filter((i) =>
-      get_registry_path(scene).some((p) =>
-        i.id.toLowerCase().startsWith(p.toLowerCase())
-      )
-    );
+    const items = data.filter((i) => match_scene(i.id) === scene);
 
     return (
       <Content>
@@ -227,38 +227,59 @@ const App = () => {
                     shape="square"
                     src={base64ToImageUrl(item.info?.icon)}
                   />
-                  <Text>{item.name}</Text>
-                  {
-                    /* <Button icon={<CopyOutlined />} size="small" onClick={e => {
-                    e.stopPropagation();
-                    e.preventDefault();
-                    navigator.clipboard.writeText(item.name);
-
-                  }} />
-                  <Text>|</Text>
-                  <Text> {item.id} </Text>
-                  <Button icon={<CopyOutlined />} size="small" onClick={e => {
-                    e.stopPropagation();
-                    e.preventDefault();
-                    navigator.clipboard.writeText(item.id);
-                  }} /> */
-                  }
+                  <Text>{normalizeAmpersands(item.name)}</Text>
+                  <Button
+                    icon={<CopyOutlined />}
+                    size="small"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      e.preventDefault();
+                      navigator.clipboard.writeText(
+                        normalizeAmpersands(item.name),
+                      );
+                    }}
+                  />
+                  <Text>{item.id}</Text>
+                  <Button
+                    icon={<CopyOutlined />}
+                    size="small"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      e.preventDefault();
+                      navigator.clipboard.writeText(item.id);
+                    }}
+                  />
                 </Flex>
               ),
               key: item.id,
-              children: JSON.stringify(item),
+              children: (
+                <Typography.Text style={{ whiteSpace: "pre-wrap" }}>
+                  {JSON.stringify(item, null, 2)}
+                </Typography.Text>
+              ),
               extra: (
-                <Switch
-                  checked={item.enabled}
-                  onChange={async (e, event) => {
-                    event.preventDefault();
-                    event.stopPropagation();
-                    const cmd = e ? enable : disable;
-                    await cmd(tabType, item.id, scope);
-                    item.enabled = e;
-                    setData([...data]);
-                  }}
-                />
+                <Flex gap="small" align="center" justify="center">
+                  <Button
+                    icon={<DownloadOutlined />}
+                    size="small"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      e.preventDefault();
+                      downloadReg(item);
+                    }}
+                  />
+                  <Switch
+                    checked={item.enabled}
+                    onChange={async (e, event) => {
+                      event.preventDefault();
+                      event.stopPropagation();
+                      const cmd = e ? enable : disable;
+                      await cmd(tabType, item.id, scope);
+                      item.enabled = e;
+                      setData([...data]);
+                    }}
+                  />
+                </Flex>
               ),
             };
           })}
@@ -294,14 +315,16 @@ const App = () => {
                     shape="square"
                     src={base64ToImageUrl(item.info?.icon)}
                   />
-                  <Text>{item.name}</Text>
+                  <Text>{normalizeAmpersands(item.name)}</Text>
                   <Button
                     icon={<CopyOutlined />}
                     size="small"
                     onClick={(e) => {
                       e.stopPropagation();
                       e.preventDefault();
-                      navigator.clipboard.writeText(item.name);
+                      navigator.clipboard.writeText(
+                        normalizeAmpersands(item.name),
+                      );
                     }}
                   />
                   <Text>|</Text>

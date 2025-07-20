@@ -26,8 +26,13 @@ export type Scene =
   | "LibraryBackground"
   | "User"
   | "Uwp"
-  | "SystemFileAssociations";
-// | "Unknown";
+  | "SystemFileAssociations"
+  | "PropertySheetHandlers"
+  | "DragDropHandlers"
+  | "CopyHookHandlers"
+  // | "ContextMenuHandlers"
+  | "Unknown";
+
 export const SceneList: Scene[] = [
   "File",
   "Folder",
@@ -43,42 +48,78 @@ export const SceneList: Scene[] = [
   "User",
   "Uwp",
   "SystemFileAssociations",
-  // "Unknown",
+  "PropertySheetHandlers",
+  "DragDropHandlers",
+  "CopyHookHandlers",
+  // "ContextMenuHandlers",
+  "Unknown",
 ];
-export function get_registry_path(scene: Scene) {
-  switch (scene) {
-    case "File":
-      return ["*\\shell", "*\\ShellEx", "*\\OpenWithList"];
-    case "Folder":
-      return ["Folder\\shell", "Folder\\ShellEx"];
-    case "Background":
-      return ["Directory\\Background\\Shell", "Directory\\Background\\ShellEx"];
-    case "Directory":
-      return ["Directory\\Shell", "Directory\\ShellEx"];
-    case "Desktop":
-      return ["DesktopBackground\\Shell", "DesktopBackground\\ShellEx"];
-    case "Drive":
-      return ["Drive\\Shell", "Drive\\ShellEx"];
-    case "AllObjects":
-      return ["AllFilesystemObjects"];
-    case "Computer":
-      return ["CLSID\\{20D04FE0-3AEA-1069-A2D8-08002B30309D}"];
-    case "RecycleBin":
-      return ["CLSID\\{645FF040-5081-101B-9F08-00AA002F954E}"];
-    case "Library":
-      return ["LibraryFolder"];
-    case "LibraryBackground":
-      return ["LibraryFolder\\Background"];
-    case "User":
-      return ["UserLibraryFolder"];
-    case "Uwp":
-      return ["Launcher.ImmersiveApplication"];
-    case "SystemFileAssociations":
-      return ["SystemFileAssociations"];
-    // case "Unknown":
-    default:
-      return ["Unknown"];
+
+export function match_scene(path: string): Scene {
+  const s = path.toLowerCase().replace(/\\/g, "/");
+
+  if (s.includes("ShellEx/PropertySheetHandlers".toLowerCase())) {
+    return "PropertySheetHandlers";
   }
+
+  if (s.includes("ShellEx/DragDropHandlers".toLowerCase())) {
+    return "DragDropHandlers";
+  }
+  if (s.includes("ShellEx/CopyHookHandlers".toLowerCase())) {
+    return "CopyHookHandlers";
+  }
+  // if (s.includes("ShellEx/ContextMenuHandlers".toLowerCase())) {
+  //   return "ContextMenuHandlers";
+  // }
+
+  if (s.startsWith("*")) {
+    return "File";
+  }
+  if (s.startsWith("Folder".toLowerCase())) {
+    return "Folder";
+  }
+  if (s.startsWith("DesktopBackground".toLowerCase())) {
+    return "Desktop";
+  }
+  if (s.startsWith("Directory/Background".toLowerCase())) {
+    return "Background";
+  }
+  if (s.startsWith("Directory".toLowerCase())) {
+    return "Directory";
+  }
+  if (s.startsWith("Drive".toLowerCase())) {
+    return "Drive";
+  }
+  if (s.startsWith("AllFilesystemObjects".toLowerCase())) {
+    return "AllObjects";
+  }
+  if (
+    s.startsWith("CLSID/{20D04FE0-3AEA-1069-A2D8-08002B30309D}".toLowerCase())
+  ) {
+    return "Computer";
+  }
+  if (
+    s.startsWith("CLSID/{645FF040-5081-101B-9F08-00AA002F954E}".toLowerCase())
+  ) {
+    return "RecycleBin";
+  }
+
+  if (s.startsWith("LibraryFolder".toLowerCase())) {
+    return "Library";
+  }
+  if (s.startsWith("LibraryFolder/Background".toLowerCase())) {
+    return "LibraryBackground";
+  }
+  if (s.startsWith("UserLibraryFolder".toLowerCase())) {
+    return "User";
+  }
+  if (s.startsWith("Launcher.ImmersiveApplication".toLowerCase())) {
+    return "Uwp";
+  }
+  if (s.startsWith("SystemFileAssociations".toLowerCase())) {
+    return "SystemFileAssociations";
+  }
+  return "Unknown";
 }
 
 export type TypeItem = {
@@ -143,6 +184,12 @@ export function uninstall(fullname: string) {
 export function backup(ty: Type, scope: Scope) {
   return invoke<string>("backup", { ty, scope });
 }
+export async function export_reg_zip(path: string, filename: string) {
+  return new Uint8Array(
+    await invoke<Uint8Array>("export_reg_zip", { path, filename }),
+  );
+}
+
 export const ScopeList: Scope[] = [
   "User",
   "Machine",
@@ -162,4 +209,39 @@ export function download(s: string, filename = "backup.json") {
 
   document.body.removeChild(a);
   URL.revokeObjectURL(url);
+}
+
+export function normalizeAmpersands(input: string) {
+  return input
+    .replace(/&&/g, "\u0000")
+    .replace(/&/g, "")
+    .replace(/\u0000/g, "&");
+}
+
+function downloadUTF16LEFile(data: Uint8Array, filename: string) {
+  const blob = new Blob([data], { type: "application/octet-stream" });
+
+  const link = document.createElement("a");
+  link.href = URL.createObjectURL(blob);
+  link.download = filename;
+
+  document.body.appendChild(link);
+  link.click();
+  document.body.removeChild(link);
+  URL.revokeObjectURL(link.href);
+}
+
+export async function downloadReg(item: MenuItem) {
+  const filename =
+    [item.name, new Date().toLocaleDateString()].join("_").replaceAll(
+      "/",
+      "_",
+    ) + ".reg";
+  const zipname =
+    [item.name, new Date().toLocaleDateString()].join("_").replaceAll(
+      "/",
+      "_",
+    ) + ".zip";
+  const bin = await export_reg_zip(item.id, filename);
+  downloadUTF16LEFile(bin, zipname);
 }
