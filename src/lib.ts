@@ -127,6 +127,13 @@ export type TypeItem = {
   clsid: string;
   ty: string;
 };
+
+export type RegItem = {
+  path: string
+  values: Record<string, string>;
+  children?: RegItem[];
+}
+
 export type MenuItemInfo = {
   icon: string | undefined;
   publisher_display_name: string;
@@ -135,6 +142,8 @@ export type MenuItemInfo = {
   family_name: string;
   install_path: string;
   full_name: string;
+  reg: RegItem | undefined
+  reg_txt: string | undefined
 };
 
 export type MenuItem = {

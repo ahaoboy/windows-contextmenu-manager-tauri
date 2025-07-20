@@ -254,7 +254,7 @@ const App = () => {
               key: item.id,
               children: (
                 <Typography.Text style={{ whiteSpace: "pre-wrap" }}>
-                  {JSON.stringify(item, null, 2)}
+                  {item.info?.reg_txt || ""}
                 </Typography.Text>
               ),
               extra: (
