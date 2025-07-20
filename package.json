@@ -4,7 +4,9 @@
   "version": "0.1.0",
   "type": "module",
   "scripts": {
-    "lint": "cd src && deno fmt && deno lint --fix",
+    "lint": "pnpm run lint-ts && pnpm run lint-rs",
+    "lint-ts": "cd src && deno fmt && deno lint --fix",
+    "lint-rs": "cd src-tauri && cargo fmt --all &&  cargo clippy --fix --allow-dirty --allow-staged",
     "cargo-update": "cd src-tauri && cargo update",
     "dev": "vite",
     "build": "vite build",

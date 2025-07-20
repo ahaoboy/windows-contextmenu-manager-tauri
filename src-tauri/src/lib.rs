@@ -81,18 +81,19 @@ fn backup(ty: Type, scope: Option<Scope>) -> String {
 
 // FIXME: download utf16le bom file from web
 #[tauri::command]
-fn export_reg_zip(path: &str, filename:&str) -> Vec<u8> {
+fn export_reg_zip(path: &str, filename: &str) -> Vec<u8> {
     let buffer = wcm::export_reg(path).unwrap_or_default();
     let files = easy_archive::File {
-        buffer: buffer,
+        buffer,
         path: filename.to_string(),
         mode: None,
         is_dir: false,
         last_modified: None,
     };
 
-    let encoded = easy_archive::Fmt::Zip.encode(vec![files]).unwrap_or_default();
-    encoded
+    easy_archive::Fmt::Zip
+        .encode(vec![files])
+        .unwrap_or_default()
 }
 
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
