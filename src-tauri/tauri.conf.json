@@ -34,7 +34,7 @@
       "windows": {
         "installMode": "passive"
       },
-      "pubkey": "dW50cnVzdGVkIGNvbW1lbnQ6IG1pbmlzaWduIHB1YmxpYyBrZXk6IEEwRTA1NDVDOTVCRUE5MDgKUldRSXFiNlZYRlRnb0IxS1UyVFFKRFlxeUhYWjkzV1o5bnBJQ2NzSldtaTFvNlRQSWRZWmJOVksK⏎",
+      "pubkey": "dW50cnVzdGVkIGNvbW1lbnQ6IG1pbmlzaWduIHB1YmxpYyBrZXk6IEEwRTA1NDVDOTVCRUE5MDgKUldRSXFiNlZYRlRnb0IxS1UyVFFKRFlxeUhYWjkzV1o5bnBJQ2NzSldtaTFvNlRQSWRZWmJOVksK",
       "endpoints": [
         "https://github.com/ahaoboy/windows-contextmenu-manager-tauri/releases/latest/download/latest.json"
       ]
