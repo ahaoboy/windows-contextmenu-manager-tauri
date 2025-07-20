@@ -4,6 +4,7 @@
   "version": "0.1.0",
   "type": "module",
   "scripts": {
+    "lint": "cd src && deno fmt && deno lint --fix",
     "cargo-update": "cd src-tauri && cargo update",
     "dev": "vite",
     "build": "vite build",
