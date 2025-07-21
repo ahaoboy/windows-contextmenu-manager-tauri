@@ -1,6 +1,6 @@
 import { invoke } from "@tauri-apps/api/core";
 import { Buffer } from "buffer"
-
+import { File, Fmt, encode } from "@easy-install/easy-archive"
 export function base64ToImageUrl(
   data: string | undefined,
   mimeType = "image/png",
@@ -205,7 +205,7 @@ export const ScopeList: Scope[] = [
   "Machine",
 ];
 
-export function download(s: string, filename = "backup.json") {
+export function downloadJson(s: string, filename = "backup.json") {
   const blob = new Blob([s], { type: "application/json" });
 
   const url = URL.createObjectURL(blob);
@@ -229,27 +229,66 @@ export function normalizeAmpersands(input: string) {
     .replace(HACK_CHAR, "&");
 }
 
-function downloadUTF16LEFile(data: Uint8Array, filename: string) {
-  const blob = new Blob([data], { type: "application/octet-stream" });
-
-  const link = document.createElement("a");
-  link.href = URL.createObjectURL(blob);
-  link.download = filename;
-
-  document.body.appendChild(link);
-  link.click();
-  document.body.removeChild(link);
-  URL.revokeObjectURL(link.href);
+function getRegName(item: MenuItem, type: Type, scope?: Scope) {
+  const filename = [item.name, new Date().toLocaleDateString(), type, item.enabled ? 'enable' : 'disable']
+  if (scope) {
+    filename.push(scope);
+  }
+  filename.push(item.id.replaceAll("\\", "_").replaceAll("/", "_"))
+  return filename.join("_").replaceAll(
+    "/",
+    "_",
+  ) + ".reg"
 }
 
-export async function downloadReg(item: MenuItem) {
-  const filename =
-    [item.name, new Date().toLocaleDateString(), item.enabled ? 'enable' : 'disable'].join("_").replaceAll(
-      "/",
-      "_",
-    ) + ".reg";
-  const b = stringToUtf16LeWithBom(item.info?.reg_txt || "");
-  downloadBinary(b, filename);
+function getRegContent(item: MenuItem, type: Type, scope?: Scope) {
+  const HEADER = `Windows Registry Editor Version 5.00\n`
+  const v: string[] = []
+
+  if (type === "Win11") {
+    v.push(HEADER)
+    const root = scope === "Machine" ? "HKEY_LOCAL_MACHINE" : "HKEY_CURRENT_USER";
+    const blocked = `Software\\Microsoft\\Windows\\CurrentVersion\\Shell Extensions\\Blocked`;
+    v.push(`[${root}\\${blocked}]`);
+    if (item.enabled) {
+      v.push(`"{${item.id}}"=""`);
+    } else {
+      v.push(`"{${item.id}}"=-`);
+    }
+  } else if (type === "Win10") {
+    if (item.enabled) {
+      v.push(item.info?.reg_txt || "");
+    } else {
+      v.push(HEADER)
+      const root = 'HKEY_CLASSES_ROOT';
+      v.push(`[-${root}\\${item.id}]`);
+    }
+  }
+  return v.join("\n");
+}
+
+export async function downloadReg(item: MenuItem, type: Type, scope?: Scope) {
+  const filename = getRegName(item, type, scope);
+  const txt = getRegContent(item, type, scope);
+  const bin = stringToUtf16LeWithBom(txt || "");
+  downloadBinary(bin, filename);
+}
+
+export async function downloadAllReg(items: MenuItem[], type: Type, scope?: Scope) {
+  const zipName = [type, new Date().toISOString(), 'backup'].join("_") + ".zip"
+
+  const files = items.map(i => {
+    const filename = getRegName(i, type, scope)
+    const txt = getRegContent(i, type, scope)
+    return new File(filename, stringToUtf16LeWithBom(txt), undefined, false, undefined)
+  })
+
+  const bin = encode(Fmt.Zip, files,)
+  if (!bin) {
+    throw new Error("zip error")
+  }
+
+  downloadBinary(bin, zipName)
 }
 
 export const truncateText = (text: string, maxLength = 48) => {

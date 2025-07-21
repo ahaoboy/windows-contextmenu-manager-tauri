@@ -16,6 +16,7 @@
   "dependencies": {
     "@ant-design/icons": "6.0.0",
     "@ant-design/v5-patch-for-react-19": "1.0.3",
+    "@easy-install/easy-archive": "^0.2.0",
     "@tauri-apps/api": "2.6.0",
     "@tauri-apps/plugin-opener": "2.4.0",
     "@tauri-apps/plugin-updater": "2.9.0",

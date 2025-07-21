@@ -26,11 +26,10 @@ import {
 import "./App.css";
 import { Typography } from "antd";
 import {
-  backup,
   base64ToImageUrl,
   disable,
   disable_classic_menu,
-  download,
+  downloadAllReg,
   downloadReg,
   enable,
   enable_classic_menu,
@@ -242,32 +241,28 @@ const App = () => {
               {item.info?.reg_txt || ""}
             </Typography.Text>
           ),
-          extra: (
-            <Flex gap="small" align="center" justify="center">
-              {item.enabled && (
-                <Button
-                  icon={<DownloadOutlined />}
-                  size="small"
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    e.preventDefault();
-                    downloadReg(item);
-                  }}
-                />
-              )}
-              <Switch
-                checked={item.enabled}
-                onChange={async (e, event) => {
-                  event.preventDefault();
-                  event.stopPropagation();
-                  const cmd = e ? enable : disable;
-                  await cmd(tabType, item.id, scope);
-                  item.enabled = e;
-                  setData([...data]);
-                }}
-              />
-            </Flex>
-          ),
+          extra: <Flex gap="small" align="center" justify="center">
+            <Button
+              icon={<DownloadOutlined />}
+              size="small"
+              onClick={(e) => {
+                e.stopPropagation();
+                e.preventDefault();
+                downloadReg(item, "Win10");
+              }}
+            />
+            <Switch
+              checked={item.enabled}
+              onChange={async (e, event) => {
+                event.preventDefault();
+                event.stopPropagation();
+                const cmd = e ? enable : disable;
+                await cmd(tabType, item.id, scope);
+                item.enabled = e;
+                setData([...data]);
+              }}
+            />
+          </Flex>
         };
       })}
     />
@@ -333,7 +328,16 @@ const App = () => {
           ),
           key: item.id,
           children: <MoreInfoWin11 item={item} />,
-          extra: (
+          extra: <Flex gap="small" align="center" justify="center">
+            <Button
+              icon={<DownloadOutlined />}
+              size="small"
+              onClick={(e) => {
+                e.stopPropagation();
+                e.preventDefault();
+                downloadReg(item, 'Win11');
+              }}
+            />
             <Switch
               checked={item.enabled}
               onChange={async (e, event) => {
@@ -345,7 +349,7 @@ const App = () => {
                 setData([...data]);
               }}
             />
-          ),
+          </Flex>
         };
       })}
     />;
@@ -430,11 +434,7 @@ const App = () => {
             <Button onClick={restart_explorer}>{t("restart explorer")}</Button>
             <Button
               onClick={async () => {
-                const s = await backup(tabType, scope);
-                const name = tabType === "Win11"
-                  ? `backup-${tabType}-${scope}.json`
-                  : `backup-${tabType}.json`;
-                download(s, name);
+                downloadAllReg(data, tabType, tabType === 'Win11' ? scope : undefined);
               }}
             >
               {t("backup")}
