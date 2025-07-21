@@ -1,6 +1,6 @@
 import { invoke } from "@tauri-apps/api/core";
-import { Buffer } from "buffer"
-import { File, Fmt, encode } from "@easy-install/easy-archive"
+import { Buffer } from "buffer";
+import { encode, File, Fmt } from "@easy-install/easy-archive";
 export function base64ToImageUrl(
   data: string | undefined,
   mimeType = "image/png",
@@ -230,93 +230,108 @@ export function normalizeAmpersands(input: string) {
 }
 
 function getRegName(item: MenuItem, type: Type, scope?: Scope) {
-  const filename = [item.name, new Date().toLocaleDateString(), type, item.enabled ? 'enable' : 'disable']
+  const filename = [
+    item.name,
+    new Date().toLocaleDateString(),
+    type,
+    item.enabled ? "enable" : "disable",
+  ];
   if (scope) {
     filename.push(scope);
   }
-  filename.push(item.id.replaceAll("\\", "_").replaceAll("/", "_"))
+  filename.push(item.id.replaceAll("\\", "_").replaceAll("/", "_"));
   return filename.join("_").replaceAll(
     "/",
     "_",
-  ) + ".reg"
+  ) + ".reg";
 }
 
 function getRegContent(item: MenuItem, type: Type, scope?: Scope) {
-  const HEADER = `Windows Registry Editor Version 5.00\n`
-  const v: string[] = []
+  const HEADER = `Windows Registry Editor Version 5.00\n`;
+  const v: string[] = [];
 
   if (type === "Win11") {
-    v.push(HEADER)
-    const root = scope === "Machine" ? "HKEY_LOCAL_MACHINE" : "HKEY_CURRENT_USER";
-    const blocked = `Software\\Microsoft\\Windows\\CurrentVersion\\Shell Extensions\\Blocked`;
+    v.push(HEADER);
+    const root = scope === "Machine"
+      ? "HKEY_LOCAL_MACHINE"
+      : "HKEY_CURRENT_USER";
+    const blocked =
+      `Software\\Microsoft\\Windows\\CurrentVersion\\Shell Extensions\\Blocked`;
     v.push(`[${root}\\${blocked}]`);
     if (item.enabled) {
-      v.push(`"{${item.id}}"=""`);
-    } else {
       v.push(`"{${item.id}}"=-`);
+    } else {
+      v.push(`"{${item.id}}"=""`);
     }
   } else if (type === "Win10") {
     if (item.enabled) {
       v.push(item.info?.reg_txt || "");
     } else {
-      v.push(HEADER)
-      const root = 'HKEY_CLASSES_ROOT';
+      v.push(HEADER);
+      const root = "HKEY_CLASSES_ROOT";
       v.push(`[-${root}\\${item.id}]`);
     }
   }
   return v.join("\n");
 }
 
-export async function downloadReg(item: MenuItem, type: Type, scope?: Scope) {
+export function downloadReg(item: MenuItem, type: Type, scope?: Scope) {
   const filename = getRegName(item, type, scope);
   const txt = getRegContent(item, type, scope);
   const bin = stringToUtf16LeWithBom(txt || "");
   downloadBinary(bin, filename);
 }
 
-export async function downloadAllReg(items: MenuItem[], type: Type, scope?: Scope) {
-  const zipName = [type, new Date().toISOString(), 'backup'].join("_") + ".zip"
+export function downloadAllReg(
+  items: MenuItem[],
+  type: Type,
+  scope?: Scope,
+) {
+  const zipName = [type, new Date().toISOString(), "backup"].join("_") + ".zip";
 
-  const files = items.map(i => {
-    const filename = getRegName(i, type, scope)
-    const txt = getRegContent(i, type, scope)
-    return new File(filename, stringToUtf16LeWithBom(txt), undefined, false, undefined)
-  })
+  const files = items.map((i) => {
+    const filename = getRegName(i, type, scope);
+    const txt = getRegContent(i, type, scope);
+    return new File(
+      filename,
+      stringToUtf16LeWithBom(txt),
+      undefined,
+      false,
+      undefined,
+    );
+  });
 
-  const bin = encode(Fmt.Zip, files,)
+  const bin = encode(Fmt.Zip, files);
   if (!bin) {
-    throw new Error("zip error")
+    throw new Error("zip error");
   }
 
-  downloadBinary(bin, zipName)
+  downloadBinary(bin, zipName);
 }
 
 export const truncateText = (text: string, maxLength = 48) => {
-  return text.length > maxLength ? text.slice(0, maxLength) + '…' : text;
+  return text.length > maxLength ? text.slice(0, maxLength) + "…" : text;
 };
-
-
 
 function stringToUtf16LeWithBom(text: string) {
   const bom = Buffer.from([0xFF, 0xFE]);
 
-  const content = Buffer.from(text, 'utf16le');
+  const content = Buffer.from(text, "utf16le");
 
   const fullBuffer = Buffer.concat([bom, content]);
 
   return new Uint8Array(fullBuffer);
 }
 
-
 const downloadBinary = (bin: Uint8Array, fileName: string) => {
-  const blob = new Blob([bin], { type: 'application/octet-stream' });
+  const blob = new Blob([bin], { type: "application/octet-stream" });
   const url = URL.createObjectURL(blob);
-  const a = document.createElement('a');
+  const a = document.createElement("a");
   a.href = url;
   a.download = fileName;
-  a.style.display = 'none';
+  a.style.display = "none";
   document.body.appendChild(a);
   a.click();
   document.body.removeChild(a);
   URL.revokeObjectURL(url);
-}
+};

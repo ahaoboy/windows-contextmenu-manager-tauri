@@ -200,78 +200,82 @@ const App = () => {
 
   const Win10 = () => {
     const sceneItems = data.filter((i) => match_scene(i.id) === scene);
-    const Child = () => <Collapse
-      expandIconPosition="end"
-      style={{ textAlign: "left" }}
-      items={sceneItems.map((item) => {
-        return {
-          label: (
-            <Flex align="center" justify="start" gap="small">
-              <Avatar
-                shape="square"
-                src={base64ToImageUrl(item.info?.icon)}
-              />
-              <Text>{truncateText(normalizeAmpersands(item.name))}</Text>
-              <Button
-                icon={<CopyOutlined />}
-                size="small"
-                onClick={(e) => {
-                  e.stopPropagation();
-                  e.preventDefault();
-                  navigator.clipboard.writeText(
-                    truncateText(normalizeAmpersands(item.name)),
-                  );
-                }}
-              />
-              <Text>{truncateText(item.id)}</Text>
-              <Button
-                icon={<CopyOutlined />}
-                size="small"
-                onClick={(e) => {
-                  e.stopPropagation();
-                  e.preventDefault();
-                  navigator.clipboard.writeText(item.id);
-                }}
-              />
-            </Flex>
-          ),
-          key: item.id,
-          children: (
-            <Typography.Text style={{ whiteSpace: "pre-wrap" }}>
-              {item.info?.reg_txt || ""}
-            </Typography.Text>
-          ),
-          extra: <Flex gap="small" align="center" justify="center">
-            <Button
-              icon={<DownloadOutlined />}
-              size="small"
-              onClick={(e) => {
-                e.stopPropagation();
-                e.preventDefault();
-                downloadReg(item, "Win10");
-              }}
-            />
-            <Switch
-              checked={item.enabled}
-              onChange={async (e, event) => {
-                event.preventDefault();
-                event.stopPropagation();
-                const cmd = e ? enable : disable;
-                await cmd(tabType, item.id, scope);
-                item.enabled = e;
-                setData([...data]);
-              }}
-            />
-          </Flex>
-        };
-      })}
-    />
+    const Child = () => (
+      <Collapse
+        expandIconPosition="end"
+        style={{ textAlign: "left" }}
+        items={sceneItems.map((item) => {
+          return {
+            label: (
+              <Flex align="center" justify="start" gap="small">
+                <Avatar
+                  shape="square"
+                  src={base64ToImageUrl(item.info?.icon)}
+                />
+                <Text>{truncateText(normalizeAmpersands(item.name))}</Text>
+                <Button
+                  icon={<CopyOutlined />}
+                  size="small"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    e.preventDefault();
+                    navigator.clipboard.writeText(
+                      truncateText(normalizeAmpersands(item.name)),
+                    );
+                  }}
+                />
+                <Text>{truncateText(item.id)}</Text>
+                <Button
+                  icon={<CopyOutlined />}
+                  size="small"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    e.preventDefault();
+                    navigator.clipboard.writeText(item.id);
+                  }}
+                />
+              </Flex>
+            ),
+            key: item.id,
+            children: (
+              <Typography.Text style={{ whiteSpace: "pre-wrap" }}>
+                {item.info?.reg_txt || ""}
+              </Typography.Text>
+            ),
+            extra: (
+              <Flex gap="small" align="center" justify="center">
+                <Button
+                  icon={<DownloadOutlined />}
+                  size="small"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    e.preventDefault();
+                    downloadReg(item, "Win10");
+                  }}
+                />
+                <Switch
+                  checked={item.enabled}
+                  onChange={async (e, event) => {
+                    event.preventDefault();
+                    event.stopPropagation();
+                    const cmd = e ? enable : disable;
+                    await cmd(tabType, item.id, scope);
+                    item.enabled = e;
+                    setData([...data]);
+                  }}
+                />
+              </Flex>
+            ),
+          };
+        })}
+      />
+    );
 
-    const items = SceneList.map((v => ({
+    const items = SceneList.map((v) => ({
       label: v,
       key: v,
       children: <Child />,
-    })));
+    }));
     return (
       <Content>
         <Tabs
@@ -284,80 +288,85 @@ const App = () => {
           items={items}
           tabBarGutter={0}
         />
-
       </Content>
     );
   };
 
   const Win11 = () => {
-    const Child = () => <Collapse
-      expandIconPosition="end"
-      style={{ textAlign: "left" }}
-      items={data.map((item) => {
-        return {
-          label: (
-            <Flex align="center" justify="start" gap="small">
-              <Avatar
-                shape="square"
-                src={base64ToImageUrl(item.info?.icon)}
-              />
-              <Text ellipsis > {truncateText(normalizeAmpersands(item.name))}</Text>
-              <Button
-                icon={<CopyOutlined />}
-                size="small"
-                onClick={(e) => {
-                  e.stopPropagation();
-                  e.preventDefault();
-                  navigator.clipboard.writeText(
-                    truncateText(normalizeAmpersands(item.name)),
-                  );
-                }}
-              />
-              <Text>|</Text>
-              <Text>{truncateText(item.id)}</Text>
-              <Button
-                icon={<CopyOutlined />}
-                size="small"
-                onClick={(e) => {
-                  e.stopPropagation();
-                  e.preventDefault();
-                  navigator.clipboard.writeText(item.id);
-                }}
-              />
-            </Flex>
-          ),
-          key: item.id,
-          children: <MoreInfoWin11 item={item} />,
-          extra: <Flex gap="small" align="center" justify="center">
-            <Button
-              icon={<DownloadOutlined />}
-              size="small"
-              onClick={(e) => {
-                e.stopPropagation();
-                e.preventDefault();
-                downloadReg(item, 'Win11');
-              }}
-            />
-            <Switch
-              checked={item.enabled}
-              onChange={async (e, event) => {
-                event.preventDefault();
-                event.stopPropagation();
-                const cmd = e ? enable : disable;
-                await cmd(tabType, item.id, scope);
-                item.enabled = e;
-                setData([...data]);
-              }}
-            />
-          </Flex>
-        };
-      })}
-    />;
+    const Child = () => (
+      <Collapse
+        expandIconPosition="end"
+        style={{ textAlign: "left" }}
+        items={data.map((item) => {
+          return {
+            label: (
+              <Flex align="center" justify="start" gap="small">
+                <Avatar
+                  shape="square"
+                  src={base64ToImageUrl(item.info?.icon)}
+                />
+                <Text ellipsis>
+                  {truncateText(normalizeAmpersands(item.name))}
+                </Text>
+                <Button
+                  icon={<CopyOutlined />}
+                  size="small"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    e.preventDefault();
+                    navigator.clipboard.writeText(
+                      truncateText(normalizeAmpersands(item.name)),
+                    );
+                  }}
+                />
+                <Text>|</Text>
+                <Text>{truncateText(item.id)}</Text>
+                <Button
+                  icon={<CopyOutlined />}
+                  size="small"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    e.preventDefault();
+                    navigator.clipboard.writeText(item.id);
+                  }}
+                />
+              </Flex>
+            ),
+            key: item.id,
+            children: <MoreInfoWin11 item={item} />,
+            extra: (
+              <Flex gap="small" align="center" justify="center">
+                <Button
+                  icon={<DownloadOutlined />}
+                  size="small"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    e.preventDefault();
+                    downloadReg(item, "Win11");
+                  }}
+                />
+                <Switch
+                  checked={item.enabled}
+                  onChange={async (e, event) => {
+                    event.preventDefault();
+                    event.stopPropagation();
+                    const cmd = e ? enable : disable;
+                    await cmd(tabType, item.id, scope);
+                    item.enabled = e;
+                    setData([...data]);
+                  }}
+                />
+              </Flex>
+            ),
+          };
+        })}
+      />
+    );
     const items = [{
       label: `User`,
       key: "User",
       children: <Child />,
-    },]
+    }];
 
     if (admin) {
       items.push({
@@ -378,8 +387,6 @@ const App = () => {
           tabPosition="left"
           items={items}
         />
-
-
       </Content>
     );
   };
@@ -433,8 +440,12 @@ const App = () => {
               )}
             <Button onClick={restart_explorer}>{t("restart explorer")}</Button>
             <Button
-              onClick={async () => {
-                downloadAllReg(data, tabType, tabType === 'Win11' ? scope : undefined);
+              onClick={() => {
+                downloadAllReg(
+                  data,
+                  tabType,
+                  tabType === "Win11" ? scope : undefined,
+                );
               }}
             >
               {t("backup")}

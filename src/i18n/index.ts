@@ -4,6 +4,8 @@ import LanguageDetector from "i18next-browser-languagedetector";
 import en from "./en-us.json";
 import zh from "./zh-cn.json";
 
+type Dict = typeof en;
+
 export const I18nResources = {
   en: {
     translation: en,
@@ -11,7 +13,7 @@ export const I18nResources = {
   zh: {
     translation: zh,
   },
-} as const;
+} satisfies Record<string, { translation: Dict }>;
 
 i18n
   .use(LanguageDetector)
