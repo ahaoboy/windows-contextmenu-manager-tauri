@@ -291,75 +291,86 @@ const App = () => {
   };
 
   const Win11 = () => {
+    const Child = () => <Collapse
+      expandIconPosition="end"
+      style={{ textAlign: "left" }}
+      items={data.map((item) => {
+        return {
+          label: (
+            <Flex align="center" justify="start" gap="small">
+              <Avatar
+                shape="square"
+                src={base64ToImageUrl(item.info?.icon)}
+              />
+              <Text>{normalizeAmpersands(item.name)}</Text>
+              <Button
+                icon={<CopyOutlined />}
+                size="small"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  e.preventDefault();
+                  navigator.clipboard.writeText(
+                    normalizeAmpersands(item.name),
+                  );
+                }}
+              />
+              <Text>|</Text>
+              <Text>{item.id}</Text>
+              <Button
+                icon={<CopyOutlined />}
+                size="small"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  e.preventDefault();
+                  navigator.clipboard.writeText(item.id);
+                }}
+              />
+            </Flex>
+          ),
+          key: item.id,
+          children: <MoreInfoWin11 item={item} />,
+          extra: (
+            <Switch
+              checked={item.enabled}
+              onChange={async (e, event) => {
+                event.preventDefault();
+                event.stopPropagation();
+                const cmd = e ? enable : disable;
+                await cmd(tabType, item.id, scope);
+                item.enabled = e;
+                setData([...data]);
+              }}
+            />
+          ),
+        };
+      })}
+    />;
+    const items = [{
+      label: `User`,
+      key: "User",
+      children: <Child />,
+    },]
+
+    if (admin) {
+      items.push({
+        label: `Machine`,
+        key: "Machine",
+        children: <Child />,
+      });
+    }
     return (
       <Content>
-        {admin && (
-          <Radio.Group
-            defaultValue="User"
-            value={scope}
-            onChange={(e) => {
-              setScope(e.target.value as Scope);
-            }}
-          >
-            {ScopeList.map((v) => (
-              <Radio.Button value={v} key={v}>{v}</Radio.Button>
-            ))}
-          </Radio.Group>
-        )}
-        <Collapse
-          expandIconPosition="end"
-          style={{ textAlign: "left" }}
-          items={data.map((item) => {
-            return {
-              label: (
-                <Flex align="center" justify="start" gap="small">
-                  <Avatar
-                    shape="square"
-                    src={base64ToImageUrl(item.info?.icon)}
-                  />
-                  <Text>{normalizeAmpersands(item.name)}</Text>
-                  <Button
-                    icon={<CopyOutlined />}
-                    size="small"
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      e.preventDefault();
-                      navigator.clipboard.writeText(
-                        normalizeAmpersands(item.name),
-                      );
-                    }}
-                  />
-                  <Text>|</Text>
-                  <Text>{item.id}</Text>
-                  <Button
-                    icon={<CopyOutlined />}
-                    size="small"
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      e.preventDefault();
-                      navigator.clipboard.writeText(item.id);
-                    }}
-                  />
-                </Flex>
-              ),
-              key: item.id,
-              children: <MoreInfoWin11 item={item} />,
-              extra: (
-                <Switch
-                  checked={item.enabled}
-                  onChange={async (e, event) => {
-                    event.preventDefault();
-                    event.stopPropagation();
-                    const cmd = e ? enable : disable;
-                    await cmd(tabType, item.id, scope);
-                    item.enabled = e;
-                    setData([...data]);
-                  }}
-                />
-              ),
-            };
-          })}
+        <Tabs
+          defaultActiveKey={scope}
+          centered
+          onChange={(e) => {
+            setScope(e as Scope);
+          }}
+          tabPosition="left"
+          items={items}
         />
+
+
       </Content>
     );
   };
