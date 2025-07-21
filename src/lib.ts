@@ -1,4 +1,5 @@
 import { invoke } from "@tauri-apps/api/core";
+import { Buffer } from "buffer"
 
 export function base64ToImageUrl(
   data: string | undefined,
@@ -243,19 +244,40 @@ function downloadUTF16LEFile(data: Uint8Array, filename: string) {
 
 export async function downloadReg(item: MenuItem) {
   const filename =
-    [item.name, new Date().toLocaleDateString()].join("_").replaceAll(
+    [item.name, new Date().toLocaleDateString(), item.enabled ? 'enable' : 'disable'].join("_").replaceAll(
       "/",
       "_",
     ) + ".reg";
-  const zipname =
-    [item.name, new Date().toLocaleDateString()].join("_").replaceAll(
-      "/",
-      "_",
-    ) + ".zip";
-  const bin = await export_reg_zip(item.id, filename);
-  downloadUTF16LEFile(bin, zipname);
+  const b = stringToUtf16LeWithBom(item.info?.reg_txt || "");
+  downloadBinary(b, filename);
 }
 
 export const truncateText = (text: string, maxLength = 48) => {
   return text.length > maxLength ? text.slice(0, maxLength) + '…' : text;
 };
+
+
+
+function stringToUtf16LeWithBom(text: string) {
+  const bom = Buffer.from([0xFF, 0xFE]);
+
+  const content = Buffer.from(text, 'utf16le');
+
+  const fullBuffer = Buffer.concat([bom, content]);
+
+  return new Uint8Array(fullBuffer);
+}
+
+
+const downloadBinary = (bin: Uint8Array, fileName: string) => {
+  const blob = new Blob([bin], { type: 'application/octet-stream' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = fileName;
+  a.style.display = 'none';
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  URL.revokeObjectURL(url);
+}
