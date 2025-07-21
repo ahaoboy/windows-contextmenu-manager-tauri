@@ -375,6 +375,11 @@ const App = () => {
         children: <Child />,
       });
     }
+
+    // FIXME: https://github.com/ahaoboy/windows-contextmenu-manager-tauri/pull/8
+    if (!admin) {
+      return <Title>Requires running as administrator</Title>
+    }
     return (
       <Content>
         <Tabs
