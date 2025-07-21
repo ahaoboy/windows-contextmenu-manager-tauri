@@ -425,6 +425,7 @@ const App = () => {
             {menuType === "Win11"
               ? (
                 <Button
+                  disabled={!admin}
                   onClick={() => {
                     enable_classic_menu();
                     setMenuType("Win10");
@@ -435,6 +436,7 @@ const App = () => {
               )
               : (
                 <Button
+                  disabled={!admin}
                   onClick={() => {
                     disable_classic_menu();
                     setMenuType("Win11");
