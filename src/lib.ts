@@ -255,3 +255,7 @@ export async function downloadReg(item: MenuItem) {
   const bin = await export_reg_zip(item.id, filename);
   downloadUTF16LEFile(bin, zipname);
 }
+
+export const truncateText = (text: string, maxLength = 48) => {
+  return text.length > maxLength ? text.slice(0, maxLength) + '…' : text;
+};

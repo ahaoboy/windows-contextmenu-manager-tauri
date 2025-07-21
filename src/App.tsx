@@ -49,6 +49,7 @@ import {
   SceneList,
   Scope,
   ScopeList,
+  truncateText,
   Type,
   uninstall,
 } from "./lib";
@@ -201,91 +202,96 @@ const App = () => {
   }, [scope, tabType]);
 
   const Win10 = () => {
-    const items = data.filter((i) => match_scene(i.id) === scene);
+    const sceneItems = data.filter((i) => match_scene(i.id) === scene);
+    const Child = () => <Collapse
+      expandIconPosition="end"
+      style={{ textAlign: "left" }}
+      items={sceneItems.map((item) => {
+        return {
+          label: (
+            <Flex align="center" justify="start" gap="small">
+              <Avatar
+                shape="square"
+                src={base64ToImageUrl(item.info?.icon)}
+              />
+              <Text>{truncateText(normalizeAmpersands(item.name))}</Text>
+              <Button
+                icon={<CopyOutlined />}
+                size="small"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  e.preventDefault();
+                  navigator.clipboard.writeText(
+                    truncateText(normalizeAmpersands(item.name)),
+                  );
+                }}
+              />
+              <Text>{truncateText(item.id)}</Text>
+              <Button
+                icon={<CopyOutlined />}
+                size="small"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  e.preventDefault();
+                  navigator.clipboard.writeText(item.id);
+                }}
+              />
+            </Flex>
+          ),
+          key: item.id,
+          children: (
+            <Typography.Text style={{ whiteSpace: "pre-wrap" }}>
+              {item.info?.reg_txt || ""}
+            </Typography.Text>
+          ),
+          extra: (
+            <Flex gap="small" align="center" justify="center">
+              {item.enabled && (
+                <Button
+                  icon={<DownloadOutlined />}
+                  size="small"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    e.preventDefault();
+                    downloadReg(item);
+                  }}
+                />
+              )}
+              <Switch
+                checked={item.enabled}
+                onChange={async (e, event) => {
+                  event.preventDefault();
+                  event.stopPropagation();
+                  const cmd = e ? enable : disable;
+                  await cmd(tabType, item.id, scope);
+                  item.enabled = e;
+                  setData([...data]);
+                }}
+              />
+            </Flex>
+          ),
+        };
+      })}
+    />
 
+    const items = SceneList.map((v => ({
+      label: v,
+      key: v,
+      children: <Child />,
+    })));
     return (
       <Content>
-        <Radio.Group
-          defaultValue="File"
-          value={scene}
+        <Tabs
+          defaultActiveKey={scene}
+          centered
           onChange={(e) => {
-            setScene(e.target.value as Scene);
+            setScene(e as Scene);
           }}
-        >
-          {SceneList.map((v) => (
-            <Radio.Button value={v} key={v}>{v}</Radio.Button>
-          ))}
-        </Radio.Group>
-        <Collapse
-          expandIconPosition="end"
-          style={{ textAlign: "left" }}
-          items={items.map((item) => {
-            return {
-              label: (
-                <Flex align="center" justify="start" gap="small">
-                  <Avatar
-                    shape="square"
-                    src={base64ToImageUrl(item.info?.icon)}
-                  />
-                  <Text>{normalizeAmpersands(item.name)}</Text>
-                  <Button
-                    icon={<CopyOutlined />}
-                    size="small"
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      e.preventDefault();
-                      navigator.clipboard.writeText(
-                        normalizeAmpersands(item.name),
-                      );
-                    }}
-                  />
-                  <Text>{item.id}</Text>
-                  <Button
-                    icon={<CopyOutlined />}
-                    size="small"
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      e.preventDefault();
-                      navigator.clipboard.writeText(item.id);
-                    }}
-                  />
-                </Flex>
-              ),
-              key: item.id,
-              children: (
-                <Typography.Text style={{ whiteSpace: "pre-wrap" }}>
-                  {item.info?.reg_txt || ""}
-                </Typography.Text>
-              ),
-              extra: (
-                <Flex gap="small" align="center" justify="center">
-                  {item.enabled && (
-                    <Button
-                      icon={<DownloadOutlined />}
-                      size="small"
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        e.preventDefault();
-                        downloadReg(item);
-                      }}
-                    />
-                  )}
-                  <Switch
-                    checked={item.enabled}
-                    onChange={async (e, event) => {
-                      event.preventDefault();
-                      event.stopPropagation();
-                      const cmd = e ? enable : disable;
-                      await cmd(tabType, item.id, scope);
-                      item.enabled = e;
-                      setData([...data]);
-                    }}
-                  />
-                </Flex>
-              ),
-            };
-          })}
+          tabPosition="left"
+          items={items}
+          tabBarGutter={0}
         />
+
       </Content>
     );
   };
@@ -302,7 +308,7 @@ const App = () => {
                 shape="square"
                 src={base64ToImageUrl(item.info?.icon)}
               />
-              <Text>{normalizeAmpersands(item.name)}</Text>
+              <Text ellipsis > {truncateText(normalizeAmpersands(item.name))}</Text>
               <Button
                 icon={<CopyOutlined />}
                 size="small"
@@ -310,12 +316,12 @@ const App = () => {
                   e.stopPropagation();
                   e.preventDefault();
                   navigator.clipboard.writeText(
-                    normalizeAmpersands(item.name),
+                    truncateText(normalizeAmpersands(item.name)),
                   );
                 }}
               />
               <Text>|</Text>
-              <Text>{item.id}</Text>
+              <Text>{truncateText(item.id)}</Text>
               <Button
                 icon={<CopyOutlined />}
                 size="small"
@@ -361,6 +367,7 @@ const App = () => {
     return (
       <Content>
         <Tabs
+          tabBarGutter={0}
           defaultActiveKey={scope}
           centered
           onChange={(e) => {
@@ -450,7 +457,6 @@ const App = () => {
           defaultActiveKey="Win11"
           centered
           onChange={(e) => {
-            // console.log(e);
             setTabType(e as Type);
             update();
           }}
