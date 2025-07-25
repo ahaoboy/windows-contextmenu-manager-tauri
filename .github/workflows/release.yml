@@ -68,3 +68,12 @@ jobs:
           releaseDraft: false
           prerelease: false
           args: ${{ matrix.args }}
+      - name: Upload exe
+        uses: actions/upload-artifact@v4
+        with:
+          name: exe
+          path: ./src-tauri/target/release/*.exe
+      - uses: ncipollo/release-action@v1
+        with:
+          artifacts: ./src-tauri/target/release/*.exe
+          allowUpdates: true
