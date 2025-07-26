@@ -3,7 +3,9 @@
 **⚠️ Early Development Warning:**
 This project is still in early development. **Please backup your registry before making any changes!**
 
-https://github.com/user-attachments/assets/6f4fbe19-9ab2-41e5-b34a-ee07212777e6
+<img width="1624" height="1127" alt="PixPin_2025-07-26_19-13-22" src="https://github.com/user-attachments/assets/67838ce0-fe8d-4d60-ac8f-66d141722864" />
+
+https://github.com/user-attachments/assets/e5d9c6b7-8da3-46dc-906b-2cc4a17cfff5
 
 A graphical tool for managing the Windows contextmenu (right-click menu).
 Inspired by and referencing:.
