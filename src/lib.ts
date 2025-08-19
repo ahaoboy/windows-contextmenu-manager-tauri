@@ -31,6 +31,7 @@ export type Scene =
   | "PropertySheetHandlers"
   | "DragDropHandlers"
   | "CopyHookHandlers"
+  | "Edge"
   // | "ContextMenuHandlers"
   | "Unknown";
 
@@ -52,6 +53,7 @@ export const SceneList: Scene[] = [
   "PropertySheetHandlers",
   "DragDropHandlers",
   "CopyHookHandlers",
+  "Edge",
   // "ContextMenuHandlers",
   "Unknown",
 ];
@@ -119,6 +121,9 @@ export function match_scene(path: string): Scene {
   }
   if (s.startsWith("SystemFileAssociations".toLowerCase())) {
     return "SystemFileAssociations";
+  }
+  if (s.startsWith("SOFTWARE/Policies/Microsoft/Edge".toLowerCase())) {
+    return "Edge";
   }
   return "Unknown";
 }
@@ -324,7 +329,7 @@ function stringToUtf16LeWithBom(text: string) {
 }
 
 const downloadBinary = (bin: Uint8Array, fileName: string) => {
-  const blob = new Blob([bin], { type: "application/octet-stream" });
+  const blob = new Blob([new Uint8Array(bin)], { type: "application/octet-stream" });
   const url = URL.createObjectURL(blob);
   const a = document.createElement("a");
   a.href = url;

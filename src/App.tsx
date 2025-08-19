@@ -176,6 +176,7 @@ const App = () => {
   const [spinning, setSpinning] = useState(false);
   const [dark, setDark] = useState(isDark);
   const { t } = useTranslation();
+  const [sceneList, setSceneList] = useState<Scene[]>(SceneList);
 
   const update = async () => {
     setSpinning(true);
@@ -188,6 +189,13 @@ const App = () => {
     const admin = await is_admin();
     setAdmin(admin);
     setSpinning(false);
+    const curSceneList = [...new Set(v.map((i) => match_scene(i.id)))]
+    setSceneList(curSceneList)
+    if (curSceneList.length === 0) {
+      setScene("File");
+    } else {
+      setScene(curSceneList[0]);
+    }
   };
 
   useEffect(() => {
@@ -197,14 +205,14 @@ const App = () => {
   useEffect(() => {
     update();
   }, [scope, tabType]);
+  const sceneItems = data.filter((i) => match_scene(i.id) === scene);
 
   const Win10 = () => {
-    const sceneItems = data.filter((i) => match_scene(i.id) === scene);
     const Child = () => (
       <Collapse
         expandIconPosition="end"
         style={{ textAlign: "left" }}
-        items={sceneItems.map((item) => {
+        items={sceneItems.map((item, index) => {
           return {
             label: (
               <Flex align="center" justify="start" gap="small">
@@ -236,7 +244,7 @@ const App = () => {
                 />
               </Flex>
             ),
-            key: item.id,
+            key: item.id + index,
             children: (
               <Typography.Text style={{ whiteSpace: "pre-wrap" }}>
                 {item.info?.reg_txt || ""}
@@ -271,7 +279,7 @@ const App = () => {
       />
     );
 
-    const items = SceneList.map((v) => ({
+    const items = sceneList.map((v) => ({
       label: v,
       key: v,
       children: <Child />,
@@ -297,7 +305,7 @@ const App = () => {
       <Collapse
         expandIconPosition="end"
         style={{ textAlign: "left" }}
-        items={data.map((item) => {
+        items={data.map((item, index) => {
           return {
             label: (
               <Flex align="center" justify="start" gap="small">
@@ -332,7 +340,7 @@ const App = () => {
                 />
               </Flex>
             ),
-            key: item.id,
+            key: item.id + index,
             children: <MoreInfoWin11 item={item} />,
             extra: (
               <Flex gap="small" align="center" justify="center">
