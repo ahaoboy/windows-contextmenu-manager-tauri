@@ -329,7 +329,9 @@ function stringToUtf16LeWithBom(text: string) {
 }
 
 const downloadBinary = (bin: Uint8Array, fileName: string) => {
-  const blob = new Blob([new Uint8Array(bin)], { type: "application/octet-stream" });
+  const blob = new Blob([new Uint8Array(bin)], {
+    type: "application/octet-stream",
+  });
   const url = URL.createObjectURL(blob);
   const a = document.createElement("a");
   a.href = url;

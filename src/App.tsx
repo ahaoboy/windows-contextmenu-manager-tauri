@@ -189,8 +189,8 @@ const App = () => {
     const admin = await is_admin();
     setAdmin(admin);
     setSpinning(false);
-    const curSceneList = [...new Set(v.map((i) => match_scene(i.id)))]
-    setSceneList(curSceneList)
+    const curSceneList = [...new Set(v.map((i) => match_scene(i.id)))];
+    setSceneList(curSceneList);
     if (curSceneList.length === 0) {
       setScene("File");
     } else {
@@ -386,7 +386,7 @@ const App = () => {
 
     // FIXME: https://github.com/ahaoboy/windows-contextmenu-manager-tauri/pull/8
     if (!admin) {
-      return <Title>Requires running as administrator</Title>
+      return <Title>Requires running as administrator</Title>;
     }
     return (
       <Content>
