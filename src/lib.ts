@@ -12,6 +12,9 @@ export function base64ToImageUrl(
 }
 
 export type Type = "Win10" | "Win11";
+export type TabType = "Win10" | "Win11" | "FileExt";
+export type FileExtType = "ext" | "app"
+
 export type Scope = "User" | "Machine";
 export type Scene =
   | "File"
@@ -32,6 +35,7 @@ export type Scene =
   | "DragDropHandlers"
   | "CopyHookHandlers"
   | "Edge"
+  | "FileExt"
   // | "ContextMenuHandlers"
   | "Unknown";
 
@@ -54,6 +58,7 @@ export const SceneList: Scene[] = [
   "DragDropHandlers",
   "CopyHookHandlers",
   "Edge",
+  "FileExt",
   // "ContextMenuHandlers",
   "Unknown",
 ];
@@ -124,6 +129,15 @@ export function match_scene(path: string): Scene {
   }
   if (s.startsWith("SOFTWARE/Policies/Microsoft/Edge".toLowerCase())) {
     return "Edge";
+  }
+  if (
+
+    [
+      "Software/Microsoft/Windows/CurrentVersion/Explorer/FileExts".toLowerCase(),
+      "."
+    ].some(i => s.startsWith(i))
+  ) {
+    return "FileExt";
   }
   return "Unknown";
 }
@@ -342,3 +356,11 @@ const downloadBinary = (bin: Uint8Array, fileName: string) => {
   document.body.removeChild(a);
   URL.revokeObjectURL(url);
 };
+
+
+export function getExtName(s: string) {
+  if (s.startsWith(".")) {
+    return s
+  }
+  return s.split("\\").at(-2)
+}
