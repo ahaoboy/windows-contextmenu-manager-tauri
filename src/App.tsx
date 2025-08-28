@@ -412,7 +412,6 @@ const App = () => {
 
   const FileExt = () => {
     const extData = data.filter(i => match_scene(i.id) === "FileExt")
-    console.log(extData)
     const ExtChild = () => (
       <Collapse
         expandIconPosition="end"
@@ -497,11 +496,11 @@ const App = () => {
 
       for (const i of apps) {
         const enabled = i.items.some(i => i.enabled)
+        i.items.sort((a, b) => a.id.localeCompare(b.id))
         i.enabled = enabled
       }
-
+      apps.sort((a, b) => a.name.localeCompare(b.name))
       console.log(apps)
-
       return <Collapse
         expandIconPosition="end"
         style={{ textAlign: "left" }}

@@ -362,5 +362,9 @@ export function getExtName(s: string) {
   if (s.startsWith(".")) {
     return s
   }
-  return s.split("\\").at(-2)
+  const index = s.lastIndexOf('.')
+  if (index === -1) {
+    return s
+  }
+  return s.slice(index).split("\\")[0]
 }
