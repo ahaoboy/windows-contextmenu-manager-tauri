@@ -33,6 +33,8 @@ import {
   downloadReg,
   enable,
   enable_classic_menu,
+  FileExtType,
+  getExtName,
   is_admin,
   list,
   match_scene,
@@ -46,6 +48,7 @@ import {
   Scene,
   SceneList,
   Scope,
+  TabType,
   truncateText,
   Type,
   uninstall,
@@ -168,10 +171,13 @@ function LanguageSwitcher() {
 
 const App = () => {
   const [data, setData] = useState<MenuItem[]>([]);
-  const [tabType, setTabType] = useState<Type>("Win11");
+  const [tabType, setTabType] = useState<TabType>("Win11");
+  const dataType: Type = tabType === "Win11" ? "Win11" : "Win10"
   const [menuType, setMenuType] = useState<Type>("Win11");
   const [scope, setScope] = useState<Scope>("User");
   const [scene, setScene] = useState<Scene>("File");
+  const [fileExtType, setFileExtType] = useState<FileExtType>("app")
+
   const [admin, setAdmin] = useState<boolean>(false);
   const [spinning, setSpinning] = useState(false);
   const [dark, setDark] = useState(isDark);
@@ -180,7 +186,7 @@ const App = () => {
 
   const update = async () => {
     setSpinning(true);
-    const v = await list(tabType, scope);
+    const v = await list(dataType, scope);
     console.log(tabType, v);
     setData(v);
     // console.log(v);
@@ -267,7 +273,7 @@ const App = () => {
                     event.preventDefault();
                     event.stopPropagation();
                     const cmd = e ? enable : disable;
-                    await cmd(tabType, item.id, scope);
+                    await cmd(dataType, item.id, scope);
                     item.enabled = e;
                     setData([...data]);
                   }}
@@ -359,7 +365,7 @@ const App = () => {
                     event.preventDefault();
                     event.stopPropagation();
                     const cmd = e ? enable : disable;
-                    await cmd(tabType, item.id, scope);
+                    await cmd(dataType, item.id, scope);
                     item.enabled = e;
                     setData([...data]);
                   }}
@@ -403,6 +409,196 @@ const App = () => {
       </Content>
     );
   };
+
+  const FileExt = () => {
+    const extData = data.filter(i => match_scene(i.id) === "FileExt")
+    const ExtChild = () => (
+      <Collapse
+        expandIconPosition="end"
+        style={{ textAlign: "left" }}
+        items={extData.map((item, index) => {
+          return {
+            label: (
+              <Flex align="center" justify="start" gap="small">
+                <Avatar
+                  shape="square"
+                  src={base64ToImageUrl(item.info?.icon)}
+                />
+                <Text>{truncateText(normalizeAmpersands(item.name + " " + getExtName(item.id)))}</Text>
+                <Button
+                  icon={<CopyOutlined />}
+                  size="small"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    e.preventDefault();
+                    navigator.clipboard.writeText(
+                      truncateText(normalizeAmpersands(item.name)),
+                    );
+                  }}
+                />
+                <Text>{truncateText(item.id)}</Text>
+                <Button
+                  icon={<CopyOutlined />}
+                  size="small"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    e.preventDefault();
+                    navigator.clipboard.writeText(item.id);
+                  }}
+                />
+              </Flex>
+            ),
+            key: item.id + index,
+            children: (
+              <Typography.Text style={{ whiteSpace: "pre-wrap" }}>
+                {item.info?.reg_txt || ""}
+              </Typography.Text>
+            ),
+            extra: (
+              <Flex gap="small" align="center" justify="center">
+                <Button
+                  icon={<DownloadOutlined />}
+                  size="small"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    e.preventDefault();
+                    downloadReg(item, "Win10");
+                  }}
+                />
+                <Switch
+                  checked={item.enabled}
+                  onChange={async (e, event) => {
+                    event.preventDefault();
+                    event.stopPropagation();
+                    const cmd = e ? enable : disable;
+                    await cmd(dataType, item.id, scope);
+                    item.enabled = e;
+                    setData([...data]);
+                  }}
+                />
+              </Flex>
+            ),
+          };
+        })}
+      />
+    );
+
+    const AppChild = () => {
+      const apps: { name: string, items: MenuItem[], enabled: boolean }[] = []
+      for (const i of extData) {
+        const index = apps.findIndex(app => app.name === i.name)
+        if (index === -1) {
+          apps.push({ name: i.name, items: [], enabled: false })
+        }
+        const app = index === -1 ? apps[apps.length - 1] : apps[index]
+        app.items.push(i)
+      }
+
+      for (const i of apps) {
+        const enabled = i.items.some(i => i.enabled)
+        i.items.sort((a, b) => a.id.localeCompare(b.id))
+        i.enabled = enabled
+      }
+      apps.sort((a, b) => a.name.localeCompare(b.name))
+      console.log(apps)
+      return <Collapse
+        expandIconPosition="end"
+        style={{ textAlign: "left" }}
+        items={apps.map((item, index) => {
+          return {
+            label: (
+              <Flex align="center" justify="start" gap="small">
+                <Text>{truncateText(normalizeAmpersands(`${item.name} (${item.items.length})`))}</Text>
+              </Flex>
+            ),
+            key: item.name + index,
+            children: (
+              <Collapse items={
+                item.items.map((child, childIndex) => {
+                  return {
+                    key: item.name + index + child.id + childIndex,
+                    label: <Flex align="center" justify="start" gap="small">
+                      <Text>{truncateText(normalizeAmpersands(child.name + " " + getExtName(child.id)))}</Text>
+                    </Flex>,
+                    children: (
+                      <Typography.Text style={{ whiteSpace: "pre-wrap" }}>
+                        {child.info?.reg_txt || ""}
+                      </Typography.Text>
+                    ),
+                    extra: (
+                      <Flex gap="small" align="center" justify="center">
+                        <Button
+                          icon={<DownloadOutlined />}
+                          size="small"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            e.preventDefault();
+                            downloadReg(child, "Win10");
+                          }}
+                        />
+                        <Switch
+                          checked={child.enabled}
+                          onChange={async (e, event) => {
+                            event.preventDefault();
+                            event.stopPropagation();
+                            const cmd = e ? enable : disable;
+                            await cmd(dataType, child.id, scope);
+                            child.enabled = e;
+                            setData([...data]);
+                          }}
+                        />
+                      </Flex>
+                    ),
+                  }
+                })
+              }
+
+
+              >
+
+              </Collapse >
+
+            ),
+            extra: (
+              <Switch
+                checked={item.enabled}
+                onChange={async (e, event) => {
+                  event.preventDefault();
+                  event.stopPropagation();
+                  const cmd = e ? enable : disable;
+                  for (const i of item.items) {
+                    await cmd(dataType, i.id, scope);
+                    item.enabled = e;
+                    i.enabled = e;
+                  }
+                  setData([...data]);
+                }}
+              />
+            ),
+          };
+        })}
+      />
+    }
+    const items = ["app", "ext"].map((v) => ({
+      label: v,
+      key: v,
+      children: fileExtType === "ext" ? <ExtChild /> : <AppChild />,
+    }));
+    return (
+      <Content>
+        <Tabs
+          defaultActiveKey={fileExtType}
+          centered
+          onChange={(e) => {
+            setFileExtType(e as FileExtType);
+          }}
+          tabPosition="left"
+          items={items}
+          tabBarGutter={0}
+        />
+      </Content>
+    );
+  }
 
   return (
     <ConfigProvider
@@ -458,7 +654,7 @@ const App = () => {
               onClick={() => {
                 downloadAllReg(
                   data,
-                  tabType,
+                  dataType,
                   tabType === "Win11" ? scope : undefined,
                 );
               }}
@@ -494,6 +690,11 @@ const App = () => {
               label: `Win10`,
               key: "Win10",
               children: <Win10 />,
+            },
+            {
+              label: `FileExt`,
+              key: "FileExt",
+              children: <FileExt />,
             },
           ]}
         />
